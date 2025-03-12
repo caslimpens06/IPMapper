@@ -59,6 +59,7 @@ document.addEventListener("DOMContentLoaded", function () {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
+
     const coolIcon = L.divIcon({
         className: 'cool-marker',
         html: '<div class="marker-circle"></div>',
@@ -67,15 +68,29 @@ document.addEventListener("DOMContentLoaded", function () {
         popupAnchor: [0, -40]
     });
 
-    const marker = L.marker([51.5, -0.09], { icon: coolIcon }).addTo(map);
+    fetch('iplist.json')
+        .then(response => response.json())
+        .then(ipList => {
+            console.log('Fetched IP List:', ipList);
 
-    marker.on('mouseover', function () {
-        marker.bindPopup('192.168.1.1').openPopup();
-    });
+            ipList.forEach(function (ipObj) {
 
-    marker.on('mouseout', function () {
-        marker.closePopup();
-    });
+                if (ipObj.State === "ESTABLISHED") {
+                    console.log(`Adding marker for ${ipObj.ForeignAddress} at [${ipObj.Latitude}, ${ipObj.Longitude}]`);
+                    const marker = L.marker([ipObj.Latitude, ipObj.Longitude], { icon: coolIcon }).addTo(map);
+                    marker.bindPopup(`IP: ${ipObj.ForeignAddress}`).openPopup();
+                    marker.on('mouseover', function () {
+                        marker.bindPopup(`IP: ${ipObj.ForeignAddress}`).openPopup();
+                    });
+                    marker.on('mouseout', function () {
+                        marker.closePopup();
+                    });
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error loading IPs:', error);
+        });
 
     const zoomLevelInput = document.getElementById('zoomLevel');
     zoomLevelInput.addEventListener('input', function () {

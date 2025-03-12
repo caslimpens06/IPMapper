@@ -14,10 +14,8 @@ namespace Casus_Security.Classes
 			if (htmlFiles.Length > 0)
 			{
 				string firstHtmlFile = htmlFiles[0];
-				Console.WriteLine("Launching web interface....");
+				Console.WriteLine("Launching web interface....\n");
 				LaunchPage(firstHtmlFile);
-
-				
 			}
 			else
 			{
@@ -36,31 +34,13 @@ namespace Casus_Security.Classes
 						StartInfo = new ProcessStartInfo
 						{
 							FileName = pagePath,
-							UseShellExecute = true // This tells the OS to open the file with the default browser
+							UseShellExecute = true
 						}
 					};
-					
-					IPScanner scanner = new();
-					scanner.ImportIpsFromNetstat();
 
 					browserProcess.Start();
-					System.Threading.Thread.Sleep(3000);
 
-					while (true)
-					{
-						Console.WriteLine("Updating IP's...");
-
-						List<IP> ips = scanner.GetIpList();
-						
-						foreach (string ip in ips) 
-						{ 
-							Console.WriteLine(ip);
-						}
-
-						System.Threading.Thread.Sleep(2000);
-					}
-
-					//browserProcess.WaitForExit();
+					browserProcess.WaitForExit();
 				}
 				else
 				{

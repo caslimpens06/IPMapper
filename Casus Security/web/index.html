@@ -9,14 +9,13 @@
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 </head>
 <body>
-    <!-- Hamburger Menu Button -->
+
     <div class="hamburger-menu" id="hamburger">
         <div class="stripe"></div>
         <div class="stripe"></div>
         <div class="stripe"></div>
     </div>
 
-    <!-- Flyout Menu -->
     <nav class="flyout-menu" id="flyoutMenu">
         <ul>
             <li><a href="#" id="mapBtn">Map</a></li>
@@ -25,22 +24,19 @@
         </ul>
     </nav>
 
-    <!-- Content Section -->
     <div class="content">
-        <!-- Map Section -->
+
         <div id="mapSection" class="section" style="display: none;">
             <div id="map"></div>
         </div>
 
-        <!-- IP List Section -->
+
         <div id="ipListSection" class="section" style="display: none;">
             <h2>IP List</h2>
             <ul id="ipList">
-                <!-- IPs will be dynamically inserted here -->
             </ul>
         </div>
 
-        <!-- Options Section -->
         <div id="optionsSection" class="section" style="display: none;">
             <h2>Options</h2>
             <label for="zoomLevel">Zoom Level:</label>
