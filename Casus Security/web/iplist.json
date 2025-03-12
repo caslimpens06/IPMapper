@@ -1,7 +1,7 @@
 [
   {
     "Protocol": "TCP",
-    "LocalAddress": "192.168.178.86:52936",
+    "LocalAddress": "10.20.6.176:56899",
     "ForeignAddress": "20.198.162.78",
     "State": "ESTABLISHED",
     "Port": 0,
@@ -11,27 +11,47 @@
   },
   {
     "Protocol": "TCP",
-    "LocalAddress": "192.168.178.86:53768",
-    "ForeignAddress": "142.250.102.188",
+    "LocalAddress": "10.20.6.176:57151",
+    "ForeignAddress": "35.186.224.44",
     "State": "ESTABLISHED",
     "Port": 0,
     "Location": "",
-    "Latitude": 52.5083,
-    "Longitude": 5.475
+    "Latitude": 39.0997,
+    "Longitude": -94.5786
   },
   {
     "Protocol": "TCP",
-    "LocalAddress": "192.168.178.86:54062",
-    "ForeignAddress": "142.250.27.188",
+    "LocalAddress": "10.20.6.176:57152",
+    "ForeignAddress": "35.186.224.44",
     "State": "ESTABLISHED",
     "Port": 0,
     "Location": "",
-    "Latitude": 52.5083,
-    "Longitude": 5.475
+    "Latitude": 39.0997,
+    "Longitude": -94.5786
   },
   {
     "Protocol": "TCP",
-    "LocalAddress": "192.168.178.86:56617",
+    "LocalAddress": "10.20.6.176:57157",
+    "ForeignAddress": "52.182.143.208",
+    "State": "ESTABLISHED",
+    "Port": 0,
+    "Location": "",
+    "Latitude": 41.6005,
+    "Longitude": -93.6091
+  },
+  {
+    "Protocol": "TCP",
+    "LocalAddress": "10.20.6.176:57159",
+    "ForeignAddress": "34.158.1.133",
+    "State": "ESTABLISHED",
+    "Port": 0,
+    "Location": "",
+    "Latitude": 53.33,
+    "Longitude": 6.9181
+  },
+  {
+    "Protocol": "TCP",
+    "LocalAddress": "10.20.6.176:57160",
     "ForeignAddress": "40.84.185.67",
     "State": "ESTABLISHED",
     "Port": 0,
@@ -41,27 +61,117 @@
   },
   {
     "Protocol": "TCP",
-    "LocalAddress": "192.168.178.86:58177",
-    "ForeignAddress": "172.64.152.29",
+    "LocalAddress": "10.20.6.176:57275",
+    "ForeignAddress": "20.54.232.160",
     "State": "ESTABLISHED",
     "Port": 0,
     "Location": "",
-    "Latitude": 37.7621,
-    "Longitude": -122.3971
+    "Latitude": 52.374,
+    "Longitude": 4.8897
   },
   {
     "Protocol": "TCP",
-    "LocalAddress": "192.168.178.86:58187",
-    "ForeignAddress": "104.18.32.47",
+    "LocalAddress": "10.20.6.176:57277",
+    "ForeignAddress": "40.113.110.67",
     "State": "ESTABLISHED",
     "Port": 0,
     "Location": "",
-    "Latitude": 37.7621,
-    "Longitude": -122.3971
+    "Latitude": 52.374,
+    "Longitude": 4.8897
   },
   {
     "Protocol": "TCP",
-    "LocalAddress": "192.168.178.86:58192",
+    "LocalAddress": "10.20.6.176:57286",
+    "ForeignAddress": "144.2.15.25",
+    "State": "ESTABLISHED",
+    "Port": 0,
+    "Location": "",
+    "Latitude": 32.7831,
+    "Longitude": -96.8067
+  },
+  {
+    "Protocol": "TCP",
+    "LocalAddress": "10.20.6.176:57287",
+    "ForeignAddress": "150.171.69.254",
+    "State": "ESTABLISHED",
+    "Port": 0,
+    "Location": "",
+    "Latitude": 47.674,
+    "Longitude": -122.1215
+  },
+  {
+    "Protocol": "TCP",
+    "LocalAddress": "10.20.6.176:57288",
+    "ForeignAddress": "20.46.115.77",
+    "State": "ESTABLISHED",
+    "Port": 0,
+    "Location": "",
+    "Latitude": 35.6895,
+    "Longitude": 139.6917
+  },
+  {
+    "Protocol": "TCP",
+    "LocalAddress": "10.20.6.176:57289",
+    "ForeignAddress": "204.79.197.222",
+    "State": "ESTABLISHED",
+    "Port": 0,
+    "Location": "",
+    "Latitude": 47.674,
+    "Longitude": -122.1215
+  },
+  {
+    "Protocol": "TCP",
+    "LocalAddress": "10.20.6.176:57308",
+    "ForeignAddress": "13.107.136.254",
+    "State": "ESTABLISHED",
+    "Port": 0,
+    "Location": "",
+    "Latitude": 47.674,
+    "Longitude": -122.1215
+  },
+  {
+    "Protocol": "TCP",
+    "LocalAddress": "10.20.6.176:57309",
+    "ForeignAddress": "52.113.196.254",
+    "State": "ESTABLISHED",
+    "Port": 0,
+    "Location": "",
+    "Latitude": 47.674,
+    "Longitude": -122.1215
+  },
+  {
+    "Protocol": "TCP",
+    "LocalAddress": "10.20.6.176:57310",
+    "ForeignAddress": "204.79.197.254",
+    "State": "ESTABLISHED",
+    "Port": 0,
+    "Location": "",
+    "Latitude": 47.674,
+    "Longitude": -122.1215
+  },
+  {
+    "Protocol": "TCP",
+    "LocalAddress": "10.20.6.176:57418",
+    "ForeignAddress": "3.233.158.24",
+    "State": "ESTABLISHED",
+    "Port": 0,
+    "Location": "",
+    "Latitude": 39.0437,
+    "Longitude": -77.4875
+  },
+  {
+    "Protocol": "TCP",
+    "LocalAddress": "10.20.6.176:57419",
+    "ForeignAddress": "142.250.27.188",
+    "State": "ESTABLISHED",
+    "Port": 0,
+    "Location": "",
+    "Latitude": 52.5083,
+    "Longitude": 5.475
+  },
+  {
+    "Protocol": "TCP",
+    "LocalAddress": "10.20.6.176:57427",
     "ForeignAddress": "172.64.155.209",
     "State": "ESTABLISHED",
     "Port": 0,
@@ -71,8 +181,8 @@
   },
   {
     "Protocol": "TCP",
-    "LocalAddress": "192.168.178.86:58242",
-    "ForeignAddress": "104.18.30.173",
+    "LocalAddress": "10.20.6.176:57428",
+    "ForeignAddress": "104.18.32.47",
     "State": "ESTABLISHED",
     "Port": 0,
     "Location": "",
@@ -81,72 +191,62 @@
   },
   {
     "Protocol": "TCP",
-    "LocalAddress": "192.168.178.86:58376",
-    "ForeignAddress": "52.98.232.2",
+    "LocalAddress": "192.168.178.212:52414",
+    "ForeignAddress": "192.168.178.89",
     "State": "ESTABLISHED",
     "Port": 0,
     "Location": "",
-    "Latitude": 52.374,
-    "Longitude": 4.8897
+    "Latitude": 0.0,
+    "Longitude": 0.0
   },
   {
     "Protocol": "TCP",
-    "LocalAddress": "192.168.178.86:58523",
-    "ForeignAddress": "151.101.37.91",
+    "LocalAddress": "192.168.178.212:52415",
+    "ForeignAddress": "192.168.178.157",
     "State": "ESTABLISHED",
     "Port": 0,
     "Location": "",
-    "Latitude": 52.374,
-    "Longitude": 4.8897
+    "Latitude": 0.0,
+    "Longitude": 0.0
   },
   {
     "Protocol": "TCP",
-    "LocalAddress": "192.168.178.86:58524",
-    "ForeignAddress": "151.101.37.91",
+    "LocalAddress": "192.168.178.212:54457",
+    "ForeignAddress": "192.168.178.157",
     "State": "ESTABLISHED",
     "Port": 0,
     "Location": "",
-    "Latitude": 52.374,
-    "Longitude": 4.8897
+    "Latitude": 0.0,
+    "Longitude": 0.0
   },
   {
     "Protocol": "TCP",
-    "LocalAddress": "192.168.178.86:58529",
-    "ForeignAddress": "13.107.21.239",
+    "LocalAddress": "192.168.178.212:54460",
+    "ForeignAddress": "192.168.178.89",
     "State": "ESTABLISHED",
     "Port": 0,
     "Location": "",
-    "Latitude": 47.674,
-    "Longitude": -122.1215
+    "Latitude": 0.0,
+    "Longitude": 0.0
   },
   {
     "Protocol": "TCP",
-    "LocalAddress": "192.168.178.86:58606",
-    "ForeignAddress": "18.65.39.29",
+    "LocalAddress": "192.168.178.212:57421",
+    "ForeignAddress": "192.168.178.89",
     "State": "ESTABLISHED",
     "Port": 0,
     "Location": "",
-    "Latitude": 52.374,
-    "Longitude": 4.8897
+    "Latitude": 0.0,
+    "Longitude": 0.0
   },
   {
     "Protocol": "TCP",
-    "LocalAddress": "192.168.178.86:58733",
-    "ForeignAddress": "3.233.158.25",
+    "LocalAddress": "192.168.178.212:57424",
+    "ForeignAddress": "192.168.178.157",
     "State": "ESTABLISHED",
     "Port": 0,
     "Location": "",
-    "Latitude": 39.0437,
-    "Longitude": -77.4875
-  },
-  {
-    "Protocol": "TCP",
-    "LocalAddress": "192.168.178.86:58736",
-    "ForeignAddress": "13.107.253.67",
-    "State": "ESTABLISHED",
-    "Port": 0,
-    "Location": "",
-    "Latitude": 47.674,
-    "Longitude": -122.1215
+    "Latitude": 0.0,
+    "Longitude": 0.0
   }
 ]

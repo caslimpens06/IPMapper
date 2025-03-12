@@ -6,8 +6,9 @@ namespace Casus_Security.Classes
 {
 	internal class IPScanner
 	{
-		private static List<IP> ipList = new();
-		private static List<IP> displayedIPS = new();
+		private static List<IP> ipList = new();  // List to store all IPs
+		private static List<IP> displayedIPS = new();  // List to store displayed IPs
+		private static List<IP> oldIPS = new();  // List to store previously seen IPs
 
 		public IPScanner() { }
 
@@ -76,7 +77,6 @@ namespace Casus_Security.Classes
 
 		private string ExtractIpFromForeignAddress(string foreignAddress)
 		{
-			// Regex pattern to extract only the IP address part before the first colon (port)
 			Regex ipPattern = new Regex(@"^(?<ip>\d{1,3}(\.\d{1,3}){3})");
 			Match match = ipPattern.Match(foreignAddress);
 
@@ -88,35 +88,74 @@ namespace Casus_Security.Classes
 			return string.Empty;
 		}
 
+		// Populate IP list and display them for the first time
 		public static void PopulateIPS()
 		{
-		
 			IPScanner scanner = new();
 			scanner.ImportIpsFromNetstat();
 
+			// First-time load: Populate displayedIPs with the current list and oldIPS as well
 			foreach (IP ip in ipList)
+			{
+				// Add all IPs to the displayed list and old list
+				displayedIPS.Add(ip);
+				oldIPS.Add(ip);
+			}
+
+			// Fetch location for each displayed IP
+			foreach (IP ip in displayedIPS)
 			{
 				IP populatedIP = GeoAPI.FetchLocationForIP(ip);
 				if (populatedIP != null)
 				{
-					displayedIPS.Add(populatedIP);
-					
 					Console.WriteLine("ADDED: " + populatedIP.ForeignAddress + " Lat: " + populatedIP.Latitude + " Long: " + populatedIP.Longitude);
 				}
 			}
 
-			
-			string jsonPath = @"C:\Users\casli\source\Security\Casus Security\Casus Security\web";
+			// After first load, save to JSON (you may also want to save before refresh)
+			SaveIpsToJson(ipList);
+		}
 
+		// Refresh the displayedIPS and oldIPS, fetch new locations for unknown IPs
+		public static void RefreshIPS()
+		{
+			// Track new IPs that were not present before
+			List<IP> newIps = new();
+
+			foreach (IP ip in ipList)
+			{
+				// Check if this IP is in oldIPS
+				if (!oldIPS.Contains(ip))
+				{
+					// Fetch location for new IP
+					IP populatedIP = GeoAPI.FetchLocationForIP(ip);
+					if (populatedIP != null)
+					{
+						newIps.Add(populatedIP);
+						oldIPS.Add(populatedIP);  // Add new IP to oldIPS list
+						Console.WriteLine("NEW IP ADDED: " + populatedIP.ForeignAddress + " Lat: " + populatedIP.Latitude + " Long: " + populatedIP.Longitude);
+					}
+				}
+			}
+
+			// After refresh, merge the new IPs into displayedIPs (optional if you want to update the list)
+			displayedIPS.AddRange(newIps);
+
+			// Save the updated list to JSON file
+			SaveIpsToJson(displayedIPS);
+		}
+
+		// Save the IP list to JSON
+		private static void SaveIpsToJson(List<IP> ipList)
+		{
+			string jsonPath = @"C:\Users\casli\source\Security\Casus Security\Casus Security\web";
 			string[] jsonFiles = Directory.GetFiles(jsonPath, "*.json");
 
-			if (jsonPath.Length > 0)
+			if (jsonFiles.Length > 0)
 			{
 				string firstJsonFile = jsonFiles[0];
-
 				IPFileGenerator ipFile = new IPFileGenerator(firstJsonFile);
-				ipFile.GenerateIPFile(ipList);
-
+				ipFile.GenerateIPFile(ipList);  // Save the updated IP list to JSON
 			}
 			else
 			{

@@ -71,18 +71,6 @@ namespace Casus_Security.Model
 			_location = "";
 		}
 
-		public IP(string foreignaddress, double latitude, double longitude)
-		{
-			_foreignAddress = foreignaddress;
-			_latitude = latitude;
-			_longitude = longitude;
-			_state = "";
-			_port = 0;
-			_location = "";
-			_localAddress = "";
-			_protocol = "";
-		}
-
 		public IP() { }
 	}
 }

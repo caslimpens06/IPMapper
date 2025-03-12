@@ -1,11 +1,9 @@
 document.addEventListener("DOMContentLoaded", function () {
     const mapSection = document.getElementById("mapSection");
     const ipListSection = document.getElementById("ipListSection");
-    const optionsSection = document.getElementById("optionsSection");
 
     const mapBtn = document.getElementById("mapBtn");
     const ipListBtn = document.getElementById("ipListBtn");
-    const optionsBtn = document.getElementById("optionsBtn");
 
     const hamburger = document.getElementById("hamburger");
     const flyoutMenu = document.getElementById("flyoutMenu");
@@ -14,7 +12,6 @@ document.addEventListener("DOMContentLoaded", function () {
     function showSection(sectionToShow) {
         mapSection.style.display = 'none';
         ipListSection.style.display = 'none';
-        optionsSection.style.display = 'none';
         sectionToShow.style.display = 'block';
     }
 
@@ -26,10 +23,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     ipListBtn.addEventListener("click", function () {
         showSection(ipListSection);
-        hideFlyoutMenu();
-    });
-    optionsBtn.addEventListener("click", function () {
-        showSection(optionsSection);
         hideFlyoutMenu();
     });
 
@@ -59,41 +52,63 @@ document.addEventListener("DOMContentLoaded", function () {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-
-    const coolIcon = L.divIcon({
-        className: 'cool-marker',
-        html: '<div class="marker-circle"></div>',
+    const lightGreenIcon = L.divIcon({
+        className: 'lightgreen-marker',
+        html: '<div class="marker-circle" style="background-color: lightgreen;"></div>',
         iconSize: [40, 40],
         iconAnchor: [20, 40],
         popupAnchor: [0, -40]
     });
 
-    fetch('iplist.json')
-        .then(response => response.json())
-        .then(ipList => {
-            console.log('Fetched IP List:', ipList);
+    let allMarkers = [];
+    let currentIps = [];
 
-            ipList.forEach(function (ipObj) {
+    function updateMarkers() {
+        fetch('iplist.json')
+            .then(response => response.json())
+            .then(ipList => {
+                currentIps = ipList;
+                updateIpList(ipList);
 
-                if (ipObj.State === "ESTABLISHED") {
-                    console.log(`Adding marker for ${ipObj.ForeignAddress} at [${ipObj.Latitude}, ${ipObj.Longitude}]`);
-                    const marker = L.marker([ipObj.Latitude, ipObj.Longitude], { icon: coolIcon }).addTo(map);
-                    marker.bindPopup(`IP: ${ipObj.ForeignAddress}`).openPopup();
-                    marker.on('mouseover', function () {
-                        marker.bindPopup(`IP: ${ipObj.ForeignAddress}`).openPopup();
-                    });
-                    marker.on('mouseout', function () {
-                        marker.closePopup();
-                    });
-                }
-            });
-        })
-        .catch(error => {
-            console.error('Error loading IPs:', error);
+                allMarkers.forEach(marker => map.removeLayer(marker));
+                allMarkers = [];
+
+                ipList.forEach(ipObj => {
+                    if (ipObj.State === "ESTABLISHED") {
+                        const ipAddress = ipObj.ForeignAddress;
+
+                        let marker = L.marker([ipObj.Latitude, ipObj.Longitude], { icon: lightGreenIcon }).addTo(map);
+
+                        marker.bindPopup(`IP: ${ipObj.ForeignAddress}`);
+
+                        marker.on('mouseover', function () {
+                            marker.openPopup();
+                        });
+
+                        marker.on('mouseout', function () {
+                            marker.closePopup();
+                        });
+
+                        allMarkers.push(marker);
+                    }
+                });
+            })
+            .catch(error => console.error('Error loading IPs:', error));
+    }
+
+    function updateIpList(ipList) {
+        const ipListContainer = document.getElementById("ipList");
+
+        ipListContainer.innerHTML = '';
+
+        ipList.forEach(ipObj => {
+            const li = document.createElement('li');
+            li.textContent = `IP: ${ipObj.ForeignAddress} - State: ${ipObj.State} - Protocol: ${ipObj.Protocol}`;
+            ipListContainer.appendChild(li);
         });
+    }
 
-    const zoomLevelInput = document.getElementById('zoomLevel');
-    zoomLevelInput.addEventListener('input', function () {
-        map.setZoom(parseInt(zoomLevelInput.value, 10));
-    });
+    setInterval(updateMarkers, 2000);
+
+    updateMarkers();
 });

@@ -130,3 +130,18 @@ body {
 .leaflet-popup-close-button {
     display: none;
 }
+
+.marker-circle {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid black;
+}
+
+.yellow-marker .marker-circle {
+    background-color: yellow;
+}
+
+.green-marker .marker-circle {
+    background-color: green;
+}
