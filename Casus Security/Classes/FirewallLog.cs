@@ -6,7 +6,8 @@ namespace Casus_Security.Classes
 {
 	public class FirewallLog
 	{
-		private const string LogFilePath = @"C:\Windows\System32\LogFiles\Firewall\pfirewall.log";
+		private const string LogFilePath = @"{0}\System32\LogFiles\Firewall\pfirewall.log";
+		
 		private static List<IP> ipList = new List<IP>();
 		private static List<IP> displayedIPList = new List<IP>();
 
@@ -14,13 +15,15 @@ namespace Casus_Security.Classes
 		{
 			try
 			{
-				if (!File.Exists(LogFilePath))
+				string systemRoot = Environment.GetEnvironmentVariable("SystemRoot");
+				string logFilePath = string.Format(LogFilePath, systemRoot);
+				if (!File.Exists(logFilePath) || systemRoot == null)
 				{
 					Console.WriteLine("Firewall-log not found.");
 					return;
 				}
 
-				using (FileStream fs = new FileStream(LogFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+				using (FileStream fs = new FileStream(logFilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
 				using (StreamReader sr = new StreamReader(fs))
 				{
 					string logContent = sr.ReadToEnd();
@@ -65,27 +68,18 @@ namespace Casus_Security.Classes
 							IP ip = new IP(protocol, localAddress, foreignAddress, state);
 							ipList.Add(ip);
 						}
-						else
-						{
-							Console.WriteLine($"Invalid IP addresses in log line: {line}");
-						}
 					}
 					catch (Exception ex)
 					{
-						Console.WriteLine($"Error processing log line: {line}. Exception: {ex.Message}");
 					}
-				}
-				else
-				{
-					Console.WriteLine($"Invalid log format (too few parts): {line}");
 				}
 			}
 
 			// Remove duplicates based on ForeignAddress
-			{
-				HashSet<string> seenForeignAddresses = new HashSet<string>();
-				ipList.RemoveAll(ip => !seenForeignAddresses.Add(ip.ForeignAddress));
-			}
+			
+			HashSet<string> seenForeignAddresses = new HashSet<string>();
+			ipList.RemoveAll(ip => !seenForeignAddresses.Add(ip.ForeignAddress));
+			
 
 			foreach (IP noLocIP in ipList)
 			{
@@ -104,13 +98,12 @@ namespace Casus_Security.Classes
 
 		private static void SaveIpsToJson()
 		{
-			string jsonPathFirewall = @"C:\Users\casli\source\Security\Casus Security\Casus Security\web\iplistfirewall.json";
+			string jsonPathFirewall = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "web", "iplistfirewall.json");
 
 			if (File.Exists(jsonPathFirewall))
 			{
 				string jsonContent = JsonSerializer.Serialize(displayedIPList, new JsonSerializerOptions { WriteIndented = true });
 				File.WriteAllText(jsonPathFirewall, jsonContent);
-				Console.WriteLine("IP list has been saved to the JSON file.");
 			}
 			else
 			{

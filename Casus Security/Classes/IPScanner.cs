@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Casus_Security.Model;
 
@@ -115,24 +116,21 @@ namespace Casus_Security.Classes
 				}
 			}
 
-			SaveIpsToJson(ipList);
+			SaveIpsToJson();
 		}
 
-		private static void SaveIpsToJson(List<IP> ipList)
+		private static void SaveIpsToJson()
 		{
-			string jsonPath = @"C:\Users\casli\source\Security\Casus Security\Casus Security\web";
+			string jsonPathFirewall = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "web", "iplist.json");
 
-			string[] jsonFiles = Directory.GetFiles(jsonPath, "iplist.json");
-
-			if (jsonFiles.Length > 0)
+			if (File.Exists(jsonPathFirewall))
 			{
-				string firstJsonFile = jsonFiles[0];
-				IPFileGenerator ipFile = new IPFileGenerator(firstJsonFile);
-				ipFile.GenerateIPFile(ipList);
+				string jsonContent = JsonSerializer.Serialize(ipList, new JsonSerializerOptions { WriteIndented = true });
+				File.WriteAllText(jsonPathFirewall, jsonContent);
 			}
 			else
 			{
-				Console.WriteLine("No .json files found in the 'web' folder.");
+				Console.WriteLine($"No file found at: {jsonPathFirewall}");
 			}
 		}
 	}

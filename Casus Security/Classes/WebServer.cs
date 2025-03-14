@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 public class WebServer
 {
-	private static string webFolderPath = @"C:\Users\casli\source\Security\Casus Security\Casus Security\web";
+	//private static string webFolderPath = @"C:\Users\casli\source\Security\Casus Security\Casus Security\web";
+	private static string webFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "web");
 	private static bool isBrowserOpen = true;
 
 	public static void OpenLauncher()
