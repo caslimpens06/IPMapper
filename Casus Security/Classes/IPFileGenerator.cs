@@ -1,6 +1,5 @@
 ﻿using Casus_Security.Model;
 using Newtonsoft.Json;
-using System.IO;
 
 internal class IPFileGenerator
 {

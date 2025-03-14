@@ -13,7 +13,7 @@ public class WebServer
 	{
 		if (Directory.Exists(webFolderPath))
 		{
-			Console.WriteLine("Launching local webserver....\n");
+			Console.WriteLine("\nLaunching local webserver....\n");
 			Start(); // Start local server
 		}
 		else
@@ -27,7 +27,7 @@ public class WebServer
 		HttpListener listener = new HttpListener();
 		listener.Prefixes.Add("http://localhost:5000/");
 		listener.Start();
-		Console.WriteLine("Server started on: http://localhost:5000");
+		Console.WriteLine("Server started on: http://localhost:5000 \n");
 
 		// Open the browser
 		Process.Start(new ProcessStartInfo
@@ -87,13 +87,6 @@ public class WebServer
 				response.OutputStream.Close();
 			}
 		});
-
-		Console.WriteLine("Webserver is running :)");
-
-		while (true)
-		{
-			System.Threading.Thread.Sleep(1000);
-		}
 	}
 
 	private static string GetMimeType(string filePath)

@@ -14,7 +14,7 @@ body {
     cursor: pointer;
     position: fixed;
     top: 20px;
-    left: 20px;
+    left: 15px;
     z-index: 1000;
 }
 
@@ -26,10 +26,10 @@ body {
 }
 
 .flyout-menu {
-    width: 160px;
+    width: 180px;
     position: fixed;
     top: 0;
-    left: -130px;
+    left: -160px;
     height: 100%;
     background-color: #111;
     color: white;
@@ -38,25 +38,25 @@ body {
     z-index: 999;
 }
 
-    .flyout-menu.open {
-        left: 0;
-    }
+.flyout-menu.open {
+    left: 0;
+}
 
 .hamburger-menu.open .stripe {
     width: 30px;
 }
 
-    .hamburger-menu.open .stripe:nth-child(1) {
-        transform: rotate(45deg) translate(5px, 5px);
-    }
+.hamburger-menu.open .stripe:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+}
 
-    .hamburger-menu.open .stripe:nth-child(2) {
-        opacity: 0;
-    }
+.hamburger-menu.open .stripe:nth-child(2) {
+    opacity: 0;
+}
 
-    .hamburger-menu.open .stripe:nth-child(3) {
-        transform: rotate(-45deg) translate(5px, -5px);
-    }
+.hamburger-menu.open .stripe:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -5px);
+}
 
 .hamburger-menu.open .stripe {
     background-color: white;
@@ -74,22 +74,22 @@ body {
     margin-top: 60px;
 }
 
-    .flyout-menu ul li {
-        margin: 20px 0;
-    }
+.flyout-menu ul li {
+    margin: 20px 0;
+}
 
-        .flyout-menu ul li a {
-            color: white;
-            text-decoration: none;
-            font-size: 18px;
-            padding: 10px;
-            display: block;
-            transition: background-color 0.3s ease;
-        }
+.flyout-menu ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+    padding: 10px;
+    display: block;
+    transition: background-color 0.3s ease;
+}
 
-            .flyout-menu ul li a:hover {
-                background-color: #444;
-            }
+.flyout-menu ul li a:hover {
+    background-color: #444;
+}
 
 .content {
     transition: opacity 0.3s ease;
@@ -97,7 +97,7 @@ body {
     margin-top: 10px;
 }
 
-#map {
+#netstatmap, #firewallmap {
     height: 100vh;
     width: 100vw;
     position: absolute;
@@ -144,4 +144,28 @@ body {
 
 .green-marker .marker-circle {
     background-color: green;
+}
+
+#ipList, #ipListFirewall {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+#ipList li, #ipListFirewall li {
+    margin: 10px 0;
+    font-size: 16px;
+}
+
+#ipList li a, #ipListFirewall li a {
+    color: #3498db;
+    text-decoration: none;
+    font-size: 16px;
+    padding: 5px 10px;
+    display: block;
+    transition: background-color 0.3s ease;
+}
+
+#ipList li a:hover, #ipListFirewall li a:hover {
+    background-color: #f0f0f0;
 }

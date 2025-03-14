@@ -1,10 +1,11 @@
-﻿using System.Data;
-using Casus_Security.Classes;
+﻿using Casus_Security.Classes;
 
 class Program
 {
 	static void Main(string[] args)
 	{
+		FirewallLog.ReadLog();
+
 		IPScanner.PopulateIPS();
 		
 		WebServer.OpenLauncher();
@@ -17,7 +18,7 @@ class Program
 		while (true)
 		{
 			System.Threading.Thread.Sleep(8000);
-			IPScanner.PopulateIPS(); // Keep updating the IP's from netstat
+			IPScanner.PopulateIPS(); // Keep updating the IP's from NetStat every 8 seconds
 		}
 	}
 }

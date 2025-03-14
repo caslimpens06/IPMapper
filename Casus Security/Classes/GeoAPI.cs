@@ -21,7 +21,6 @@ namespace Casus_Security.Classes
 
 				if (!response.IsSuccessStatusCode)
 				{
-					Console.WriteLine($"Failed to fetch location for {ip.ForeignAddress}. HTTP {response.StatusCode}");
 					return null;
 				}
 
@@ -52,7 +51,6 @@ namespace Casus_Security.Classes
 				else
 				{
 					Console.WriteLine($"No location data available for {ip.ForeignAddress}");
-					
 				}
 			}
 			catch (Exception ex)

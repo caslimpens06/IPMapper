@@ -1,42 +1,237 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const mapSection = document.getElementById("mapSection");
+    const netstatMapSection = document.getElementById("netstatMapSection");
+    const firewallMapSection = document.getElementById("firewallMapSection");
     const ipListSection = document.getElementById("ipListSection");
+    const firewallIpListSection = document.getElementById("firewallIpListSection");
 
-    const mapBtn = document.getElementById("mapBtn");
+    const netstatMapBtn = document.getElementById("netstatMapBtn");
+    const firewallMapBtn = document.getElementById("firewallMapBtn");
     const ipListBtn = document.getElementById("ipListBtn");
+    const firewallIpListBtn = document.getElementById("firewallIpListBtn");
 
     const hamburger = document.getElementById("hamburger");
     const flyoutMenu = document.getElementById("flyoutMenu");
     const content = document.querySelector(".content");
 
+    let netstatMap, firewallMap;
+    let netstatMarkers = [];
+    let firewallMarkers = [];
+
+    let previousNetstatIPs = new Set();
+    let previousFirewallIPs = new Set();
+    let firstLoad = true;
+
+    let firstNetstatLoad = true;
+    let firstFirewallLoad = true;
+
+    function isSectionVisible(section) {
+        return section.style.display !== 'none';
+    }
+
+    showSection(netstatMapSection);
+
+    const greenDotIcon = L.divIcon({
+        className: 'green-dot',
+        html: '<div class="marker-circle" style="background-color: lightgreen; width: 10px; height: 10px; border-radius: 50%;"></div>',
+        iconSize: [12, 12],
+        iconAnchor: [6, 6],
+        popupAnchor: [0, -12]
+    });
+
+    const yellowDotIcon = L.divIcon({
+        className: 'yellow-dot',
+        html: '<div class="marker-circle" style="background-color: yellow; width: 10px; height: 10px; border-radius: 50%;"></div>',
+        iconSize: [12, 12],
+        iconAnchor: [6, 6],
+        popupAnchor: [0, -12]
+    });
+
     function showSection(sectionToShow) {
-        mapSection.style.display = 'none';
+        netstatMapSection.style.display = 'none';
+        firewallMapSection.style.display = 'none';
         ipListSection.style.display = 'none';
+        firewallIpListSection.style.display = 'none';
         sectionToShow.style.display = 'block';
     }
 
-    showSection(mapSection);
+    function initializeMap(mapId) {
+        const map = L.map(mapId).setView([0, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+        return map;
+    }
 
-    mapBtn.addEventListener("click", function () {
-        showSection(mapSection);
+    function updateNetstatMapMarkers() {
+        fetch('iplist.json')
+            .then(response => response.json())
+            .then(ipList => {
+                if (Array.isArray(ipList)) {
+                    let currentNetstatIPs = new Set();
+
+                    netstatMarkers.forEach(marker => netstatMap.removeLayer(marker));
+                    netstatMarkers = [];
+
+                    setTimeout(() => {
+                        ipList.forEach(ipObj => {
+                            if (ipObj.State === "ESTABLISHED" && ipObj.Latitude && ipObj.Longitude) {
+                                const isKnown = previousNetstatIPs.has(ipObj.ForeignAddress) || firstLoad;
+                                const marker = L.marker([ipObj.Latitude, ipObj.Longitude], {
+                                    icon: isKnown ? greenDotIcon : yellowDotIcon
+                                }).addTo(netstatMap);
+
+                                marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol}`);
+                                marker.on('mouseover', () => marker.openPopup());
+                                marker.on('mouseout', () => marker.closePopup());
+
+                                netstatMarkers.push(marker);
+                                currentNetstatIPs.add(ipObj.ForeignAddress);
+                            }
+                        });
+
+                        if (ipList.length === 0 && firstNetstatLoad && isSectionVisible(netstatMapSection)) {
+                            alert('No Netstat data was found.');
+                        }
+
+                        firstNetstatLoad = false;
+
+                        previousNetstatIPs = currentNetstatIPs;
+                        firstLoad = false; // After first load, new IPs will be tracked
+                        updateNetstatIpList(ipList);
+
+                    }, 100);
+                } else {
+                    console.error('Expected an array for Netstat IP list but got:', ipList);
+                }
+            })
+            .catch(error => console.error('Error fetching Netstat IP list:', error));
+    }
+
+    function updateFirewallMapMarkers() {
+        fetch('iplistfirewall.json')
+            .then(response => response.json())
+            .then(firewallIpList => {
+                if (Array.isArray(firewallIpList)) {
+                    let currentFirewallIPs = new Set();
+
+                    firewallMarkers.forEach(marker => firewallMap.removeLayer(marker));
+                    firewallMarkers = [];
+
+                    setTimeout(() => {
+                        firewallIpList.forEach(ipObj => {
+                            if (ipObj.State === "ALLOW" && ipObj.Latitude && ipObj.Longitude) {
+                                const isKnown = previousFirewallIPs.has(ipObj.ForeignAddress) || firstLoad;
+                                const marker = L.marker([ipObj.Latitude, ipObj.Longitude], {
+                                    icon: isKnown ? greenDotIcon : yellowDotIcon
+                                }).addTo(firewallMap);
+
+                                marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol}`);
+                                marker.on('mouseover', () => marker.openPopup());
+                                marker.on('mouseout', () => marker.closePopup());
+
+                                firewallMarkers.push(marker);
+                                currentFirewallIPs.add(ipObj.ForeignAddress);
+                            }
+                        });
+
+                        if (firewallIpList.length === 0 && firstFirewallLoad && isSectionVisible(firewallMapSection)) {
+                            alert('No Firewall data was found.');
+                        }
+
+                        firstFirewallLoad = false;
+
+                        previousFirewallIPs = currentFirewallIPs;
+                        firstLoad = false;
+                        updateFirewallIpList(firewallIpList);
+
+                    }, 100);
+                } else {
+                    console.error('Expected an array for Firewall IP list but got:', firewallIpList);
+                }
+            })
+            .catch(error => console.error('Error fetching Firewall IP list:', error));
+    }
+
+    function updateNetstatIpList(ipList) {
+        const ipListContainer = document.getElementById("ipList");
+        ipListContainer.innerHTML = ''; // Clear the list first
+
+        setTimeout(() => {
+            if (Array.isArray(ipList)) {
+                ipList.forEach(ipObj => {
+                    if (ipObj && ipObj.ForeignAddress && ipObj.State && ipObj.Protocol) {
+                        const li = document.createElement('li');
+                        li.textContent = `IP: ${ipObj.ForeignAddress}   ---   Protocol: ${ipObj.Protocol}`;
+                        ipListContainer.appendChild(li);
+                    }
+                });
+            } else {
+                console.error('Expected an array for Netstat IP list but got:', ipList);
+            }
+        }, 100); // 100ms delay before updating
+    }
+
+    function updateFirewallIpList(firewallIpList) {
+        const ipListContainer = document.getElementById("ipListFirewall");
+        ipListContainer.innerHTML = ''; // Clear the list first
+
+        setTimeout(() => {
+            if (Array.isArray(firewallIpList)) {
+                firewallIpList.forEach(ipObj => {
+                    if (ipObj && ipObj.ForeignAddress && ipObj.State && ipObj.Protocol) {
+                        const li = document.createElement('li');
+                        li.textContent = `IP: ${ipObj.ForeignAddress}   ---   Protocol: ${ipObj.Protocol}`;
+                        ipListContainer.appendChild(li);
+                    }
+                });
+            } else {
+                console.error('Expected an array for Firewall IP list but got:', firewallIpList);
+            }
+        }, 100); // 100ms delay before updating
+    }
+
+
+    // Handle button clicks
+    netstatMapBtn.addEventListener("click", function () {
+        showSection(netstatMapSection);
         hideFlyoutMenu();
+
+        if (!netstatMap) {
+            netstatMap = initializeMap('netstatmap');
+            updateNetstatMapMarkers();
+        } else {
+            netstatMap.invalidateSize();
+        }
     });
+
+    firewallMapBtn.addEventListener("click", function () {
+        showSection(firewallMapSection);
+        hideFlyoutMenu();
+
+        if (!firewallMap) {
+            firewallMap = initializeMap('firewallmap');
+            updateFirewallMapMarkers();
+        } else {
+            firewallMap.invalidateSize();
+        }
+    });
+
     ipListBtn.addEventListener("click", function () {
         showSection(ipListSection);
         hideFlyoutMenu();
     });
 
+    firewallIpListBtn.addEventListener("click", function () {
+        showSection(firewallIpListSection);
+        hideFlyoutMenu();
+    });
+
+    // Flyout menu functionality
     hamburger.addEventListener("click", function () {
         flyoutMenu.classList.toggle("open");
         content.classList.toggle("open");
         hamburger.classList.toggle("open");
-        if (hamburger.classList.contains("open")) {
-            hamburger.classList.remove("closed");
-            hamburger.classList.add("open");
-        } else {
-            hamburger.classList.remove("open");
-            hamburger.classList.add("closed");
-        }
+        hamburger.classList.toggle("closed");
     });
 
     function hideFlyoutMenu() {
@@ -46,69 +241,14 @@ document.addEventListener("DOMContentLoaded", function () {
         hamburger.classList.add("closed");
     }
 
-    const map = L.map('map').setView([0, 0], 2);
+    netstatMap = initializeMap('netstatmap');
+    firewallMap = initializeMap('firewallmap');
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
+    updateNetstatMapMarkers();
+    updateFirewallMapMarkers();
 
-    const lightGreenIcon = L.divIcon({
-        className: 'lightgreen-marker',
-        html: '<div class="marker-circle" style="background-color: lightgreen;"></div>',
-        iconSize: [40, 40],
-        iconAnchor: [20, 40],
-        popupAnchor: [0, -40]
-    });
-
-    let allMarkers = [];
-    let currentIps = [];
-
-    function updateMarkers() {
-        fetch('iplist.json')
-            .then(response => response.json())
-            .then(ipList => {
-                currentIps = ipList;
-                updateIpList(ipList);
-
-                allMarkers.forEach(marker => map.removeLayer(marker));
-                allMarkers = [];
-
-                ipList.forEach(ipObj => {
-                    if (ipObj.State === "ESTABLISHED") {
-                        const ipAddress = ipObj.ForeignAddress;
-
-                        let marker = L.marker([ipObj.Latitude, ipObj.Longitude], { icon: lightGreenIcon }).addTo(map);
-
-                        marker.bindPopup(`IP: ${ipObj.ForeignAddress}`);
-
-                        marker.on('mouseover', function () {
-                            marker.openPopup();
-                        });
-
-                        marker.on('mouseout', function () {
-                            marker.closePopup();
-                        });
-
-                        allMarkers.push(marker);
-                    }
-                });
-            })
-            .catch(error => console.error('Error loading IPs:', error));
-    }
-
-    function updateIpList(ipList) {
-        const ipListContainer = document.getElementById("ipList");
-
-        ipListContainer.innerHTML = '';
-
-        ipList.forEach(ipObj => {
-            const li = document.createElement('li');
-            li.textContent = `IP: ${ipObj.ForeignAddress} - State: ${ipObj.State} - Protocol: ${ipObj.Protocol}`;
-            ipListContainer.appendChild(li);
-        });
-    }
-
-    setInterval(updateMarkers, 2000);
-
-    updateMarkers();
+    setInterval(() => {
+        updateNetstatMapMarkers();
+        updateFirewallMapMarkers();
+    }, 8000);
 });

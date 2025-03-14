@@ -18,21 +18,31 @@
 
     <nav class="flyout-menu" id="flyoutMenu">
         <ul>
-            <li><a href="#" id="mapBtn">Map</a></li>
-            <li><a href="#" id="ipListBtn">IP List</a></li>
+            <li><a href="#" id="netstatMapBtn">Netstat Map</a></li>
+            <li><a href="#" id="firewallMapBtn">Firewall Map</a></li>
+            <li><a href="#" id="ipListBtn">Netstat IP List</a></li>
+            <li><a href="#" id="firewallIpListBtn">Firewall IP List</a></li>
         </ul>
     </nav>
 
     <div class="content">
 
-        <div id="mapSection" class="section" style="display: none;">
-            <div id="map"></div>
+        <div id="netstatMapSection" class="section">
+            <div id="netstatmap"></div>
         </div>
 
-        <div id="ipListSection" class="section" style="display: none;">
-            <h2>IP List</h2>
-            <ul id="ipList">
-            </ul>
+        <div id="firewallMapSection" class="section">
+            <div id="firewallmap"></div>
+        </div>
+
+        <div id="ipListSection" class="section">
+            <h2>Netstat IP List</h2>
+            <ul id="ipList"></ul>
+        </div>
+
+        <div id="firewallIpListSection" class="section">
+            <h2>Firewall IP List</h2>
+            <ul id="ipListFirewall"></ul>
         </div>
 
     </div>

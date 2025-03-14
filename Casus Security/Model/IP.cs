@@ -11,7 +11,6 @@ namespace Casus_Security.Model
 		private double _latitude;
 		private double _longitude;
 		private string _location;
-		private int _port;
 
 		public string Protocol
 		{
@@ -37,12 +36,6 @@ namespace Casus_Security.Model
 			set { _state = value; }
 		}
 
-		public int Port
-		{
-			get { return _port; }
-			set { _port = value; }
-		}
-
 		[JsonPropertyName("loc")]
 		public string Location
 		{
@@ -61,14 +54,12 @@ namespace Casus_Security.Model
 			set { _longitude = value; }
 		}
 
-		public IP(string protocol, string localaddress, string foreignaddress, string state, int port)
+		public IP(string protocol, string localaddress, string foreignaddress, string state)
 		{
 			_protocol = protocol;
 			_localAddress = localaddress;
 			_foreignAddress = foreignaddress;
 			_state = state;
-			_port = port;
-			_location = "";
 		}
 
 		public IP() { }
