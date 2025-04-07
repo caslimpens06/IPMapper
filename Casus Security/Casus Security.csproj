@@ -23,6 +23,9 @@
     <None Update="web\iplistfirewall.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="web\iplistlinuxauth.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="web\script.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -30,5 +33,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 
 </Project>

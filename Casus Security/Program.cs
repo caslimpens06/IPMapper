@@ -1,18 +1,39 @@
 ﻿using Casus_Security.Classes;
-
+using System.Runtime.InteropServices;
 class Program
 {
 	static void Main(string[] args)
 	{
-		Cleanup();
+	
+		if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+		{
+			Console.WriteLine("Running in Windows... \n");
 
-		FirewallLog.ReadLog();
+			Cleanup();
 
-		IPScanner.PopulateIPS();
+			FirewallLog.ReadLog();
+
+			IPScanner.PopulateIPS();
+
+			WebServer.OpenLauncher();
+
+			IPUpdaterWindows();
+		}
 		
-		WebServer.OpenLauncher();
 
-		IPUpdater();
+		if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || true) 
+		{
+			Console.WriteLine("Running in Linux... \n");
+
+			Cleanup();
+
+			AuthLogReader.ReadAuthLog();
+
+			WebServer.OpenLauncher();
+
+			IPUpdaterLinux();
+
+		}
 	}
 
 	static void Cleanup()
@@ -21,14 +42,16 @@ class Program
 
 		string ipListPath = Path.Combine(webFolderPath, "iplist.json");
 		string ipListFirewallPath = Path.Combine(webFolderPath, "iplistfirewall.json");
+		string ipListLinuxAuth = Path.Combine(webFolderPath, "iplistlinuxauth.json");
 
 		try
 		{
 			// Clear out previous JSON data
 			File.WriteAllText(ipListPath, "[]");
 			File.WriteAllText(ipListFirewallPath, "[]");
+			File.WriteAllText(ipListLinuxAuth, "[]");
 
-			Console.WriteLine("Successfully cleared both JSON files.");
+			Console.WriteLine("Successfully cleared JSON files.");
 		}
 		catch (Exception ex)
 		{
@@ -36,12 +59,22 @@ class Program
 		}
 	}
 
-	static void IPUpdater() 
+	static void IPUpdaterWindows() 
 	{
 		while (true)
 		{
 			System.Threading.Thread.Sleep(8000);
 			IPScanner.PopulateIPS(); // Keep updating the IP's from NetStat every 8 seconds
+			FirewallLog.ReadLog(); // // Keep updating the IP's from the Firewall log file every 8 seconds
+		}
+	}
+
+	static void IPUpdaterLinux()
+	{
+		while (true)
+		{
+			System.Threading.Thread.Sleep(8000);
+			AuthLogReader.ReadAuthLog(); // // Keep updating the IP's from the auth.log file every 8 seconds
 		}
 	}
 }

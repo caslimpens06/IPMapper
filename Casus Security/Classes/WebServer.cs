@@ -8,7 +8,6 @@ public class WebServer
 {
 	//private static string webFolderPath = @"C:\Users\casli\source\Security\Casus Security\Casus Security\web";
 	private static string webFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "web");
-	private static bool isBrowserOpen = true;
 
 	public static void OpenLauncher()
 	{
@@ -48,9 +47,6 @@ public class WebServer
 				// Check for ping request
 				if (request.Url.AbsolutePath == "/ping")
 				{
-					// Reset the isBrowserOpen flag if we get a ping
-					isBrowserOpen = true;
-					Console.WriteLine("Ping received: Browser is still open.");
 
 					// Send a simple OK response to keep the connection alive
 					response.StatusCode = 200;

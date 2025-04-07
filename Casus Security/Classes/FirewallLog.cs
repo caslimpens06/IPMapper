@@ -19,7 +19,7 @@ namespace Casus_Security.Classes
 				string logFilePath = string.Format(LogFilePath, systemRoot);
 				if (!File.Exists(logFilePath) || systemRoot == null)
 				{
-					Console.WriteLine("Firewall-log not found.");
+					Console.WriteLine("Firewall-log not found. Is logging enabled on this computer?");
 					return;
 				}
 

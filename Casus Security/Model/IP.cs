@@ -1,8 +1,6 @@
-﻿using System.Text.Json.Serialization;
-
-namespace Casus_Security.Model
+﻿namespace Casus_Security.Model
 {
-	internal class IP
+	public class IP
 	{
 		private string _protocol;
 		private string _localAddress;
@@ -36,7 +34,6 @@ namespace Casus_Security.Model
 			set { _state = value; }
 		}
 
-		[JsonPropertyName("loc")]
 		public string Location
 		{
 			get { return _location; }
@@ -60,6 +57,11 @@ namespace Casus_Security.Model
 			_localAddress = localaddress;
 			_foreignAddress = foreignaddress;
 			_state = state;
+		}
+
+		public IP(string foreignaddress) 
+		{
+			_foreignAddress = foreignaddress;
 		}
 
 		public IP() { }
