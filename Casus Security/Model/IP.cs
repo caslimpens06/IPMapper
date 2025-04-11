@@ -10,6 +10,7 @@
 		private double _longitude;
 		private string _location;
 		public long DataSize { get; set; } // Property to store data size
+		public bool IsMalicious { get; set; } // Property to indicate if the IP is malicious
 
         public string Protocol
 		{

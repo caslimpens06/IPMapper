@@ -35,9 +35,12 @@ namespace Casus_Security.Classes
 					ParseLogToJson(first100Lines);
 					SaveIpsToJson();
 				}
-			}
 
-			catch (UnauthorizedAccessException)
+                // Add simulated malicious IPs
+				AddSimulatedMaliciousIPs(10); // Add 10 simulated IPs for testing
+            }
+
+            catch (UnauthorizedAccessException)
 			{
 				Console.WriteLine("Access denied - try running as administrator.");
 			}
@@ -114,5 +117,29 @@ namespace Casus_Security.Classes
 				Console.WriteLine($"No file found at: {jsonPathFirewall}");
 			}
 		}
+
+		private static void AddSimulatedMaliciousIPs(int count)
+		{
+			Random random = new Random();
+
+			for (int i = 0; i < count; i++)
+			{
+				// Generate a random IP address
+				string simulatedIP = $"{random.Next(1, 255)}.{random.Next(0, 255)}.{random.Next(0, 255)}.{random.Next(0, 255)}";
+
+				// Create a mock IP object with random data
+				IP ip = new IP("TCP", "192.168.0.1", simulatedIP, "ESTABLISHED")
+				{
+					DataSize = random.Next(1000, 100000), // Random data size
+                    Latitude = random.NextDouble() * 180 - 90, // Random latitude between -90 and 90
+					Longitude = random.NextDouble() * 360 - 180, // Random longitude between -180 and 180
+					Location = "Simulated Location",
+					IsMalicious = true // Mark as malicious
+                };
+
+                // Add the simulated IP to the list
+				displayedIPList.Add(ip);
+            }
+        }
 	}
 }
