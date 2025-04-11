@@ -9,8 +9,9 @@
 		private double _latitude;
 		private double _longitude;
 		private string _location;
+		public long DataSize { get; set; } // Property to store data size
 
-		public string Protocol
+        public string Protocol
 		{
 			get { return _protocol; }
 			set { _protocol = value; }

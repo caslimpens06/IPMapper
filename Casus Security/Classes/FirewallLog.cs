@@ -62,10 +62,14 @@ namespace Casus_Security.Classes
 						string localAddress = parts[4];
 						string foreignAddress = parts[5];
 						string state = parts[2];
+						long dataSize = long.TryParse(parts[9], out var size) ? size : 0;  // Assuming column 9 contains data size
 
-						if (IsValidIp(localAddress) && IsValidIp(foreignAddress))
+                        if (IsValidIp(localAddress) && IsValidIp(foreignAddress))
 						{
-							IP ip = new IP(protocol, localAddress, foreignAddress, state);
+							IP ip = new IP(protocol, localAddress, foreignAddress, state)
+							{
+								DataSize = dataSize
+							};
 							ipList.Add(ip);
 						}
 					}

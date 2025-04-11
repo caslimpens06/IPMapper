@@ -180,7 +180,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 firewallIpList.forEach(ipObj => {
                     if (ipObj && ipObj.ForeignAddress && ipObj.State && ipObj.Protocol) {
                         const li = document.createElement('li');
-                        li.textContent = `IP: ${ipObj.ForeignAddress}   ---   Protocol: ${ipObj.Protocol}`;
+                        li.textContent = `IP: ${ipObj.ForeignAddress}   ---   Protocol: ${ipObj.Protocol} --- Data Size: ${ipObj.DataSize} bytes`;
                         ipListContainer.appendChild(li);
                     }
                 });
