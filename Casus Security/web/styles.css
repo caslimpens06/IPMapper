@@ -194,6 +194,13 @@ body {
     width: 80%;
 }
 
+.modal-img {
+    max-width: 50px;
+    height: 50px;
+    margin: 0 auto;
+    display: block;
+}
+
 /* The Close Button */
 .close {
     color: #aaaaaa;

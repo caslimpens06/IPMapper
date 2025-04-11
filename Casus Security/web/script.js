@@ -71,15 +71,28 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const modal = document.getElementById("myModal");
 
-        const modalContent = document.getElementById("modalContent");
-        modalContent.innerHTML = `
-            <img src="known_applications/images/${knownApp.Path}" width="500" height="600">
+        if (knownApp) {
+            const modalContent = document.getElementById("modalContent");
+            modalContent.innerHTML = `
+            <img class="modal-img" src="known_applications/images/${knownApp.Path}">
             <span class="close">&times;</span>
-            <p>IP: ${ipObj.ForeignAddress}</p>
-            <p>Protocol: ${ipObj.Protocol}</p>
-            <p>Application: ${ipObj.ApplicationName}</p>
-            ${knownApp ? `<p>Name: ${knownApp.Name}</p><p>Path: ${knownApp.Path}</p>` : ''}
+            ${knownApp ? `<h1><strong>${knownApp.Name} </strong></h1>` : ''}
+            <h2><strong>Dit is een bekende applicatie</strong></h2>
+            <p><strong>IP-adres:</strong> ${ipObj.ForeignAddress}</p>
+            <p><strong>Protocol:</strong> ${ipObj.Protocol}</p>
+            <p><strong>Applicatie:</strong> ${ipObj.ApplicationName}</p>
         `;
+        } else {
+            const modalContent = document.getElementById("modalContent");
+            modalContent.innerHTML = `
+            <h1><strong>Dit is een onbekende applicatie</strong></h1>
+            <span class="close">&times;</span>
+            <p><strong>IP-adres:</strong> ${ipObj.ForeignAddress}</p>
+            <p><strong>Protocol:</strong> ${ipObj.Protocol}</p>
+            <p><strong>Applicatie:</strong> ${ipObj.ApplicationName}</p>
+        `;
+        }
+
 
         // Get the <span> element that closes the modal
         var span = document.getElementsByClassName("close")[0];
