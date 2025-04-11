@@ -25,18 +25,6 @@ namespace Casus_Security.Classes
 				CreateNoWindow = true
 			};
 
-            /*			using (Process process = Process.Start(processStartInfo))
-                        {
-                            if (process == null)
-                            {
-                                Console.WriteLine("Failed to start netstat process.");
-                                return;
-                            }
-
-                            string output = process.StandardOutput.ReadToEnd();
-                            ParseOutgoingIpsFromNetstatOutput(output);
-                        }*/
-
             using (Process process = Process.Start(processStartInfo))
             {
                 if (process == null)
@@ -51,16 +39,6 @@ namespace Casus_Security.Classes
                 string reformattedOutput = ReformatNetstatOutput(output);
 
                 ParseOutgoingIpsFromNetstatOutput(reformattedOutput);
-
-
-                // Print the list in a readable manner
-
-/*				foreach(IP line in ipList)
-				{
-                    Debug.WriteLine(line.LocalAddress);
-                    Debug.WriteLine(line.ApplicationName);
-                }*/
-
             }
         }
 

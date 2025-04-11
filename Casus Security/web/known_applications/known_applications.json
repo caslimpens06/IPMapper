@@ -1,0 +1,17 @@
+[
+  {
+    "NameRaw": "[Spotify.exe]",
+    "Name": "Spotify",
+    "Path": "spotify_icon.png"
+  },
+  {
+    "NameRaw": "[Discord.exe]",
+    "Name": "Discord",
+    "Path": "discord_icon.png"
+  },
+  {
+    "NameRaw": "[chrome.exe]",
+    "Name": "Google Chrome",
+    "Path": "chrome_icon.png"
+  }
+]
