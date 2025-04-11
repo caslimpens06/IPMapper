@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                     icon: isKnown ? greenDotIcon : yellowDotIcon
                                 }).addTo(netstatMap);
 
-                                marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol}`);
+                                marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol} - Application: ${ipObj.ApplicationName}`);
                                 marker.on('mouseover', () => marker.openPopup());
                                 marker.on('mouseout', () => marker.closePopup());
 
@@ -125,7 +125,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                     icon: isKnown ? greenDotIcon : yellowDotIcon
                                 }).addTo(firewallMap);
 
-                                marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol}`);
+                                marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol} - Application: ${ipObj.ApplicationName}`);
                                 marker.on('mouseover', () => marker.openPopup());
                                 marker.on('mouseout', () => marker.closePopup());
 
@@ -161,7 +161,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 ipList.forEach(ipObj => {
                     if (ipObj && ipObj.ForeignAddress && ipObj.State && ipObj.Protocol) {
                         const li = document.createElement('li');
-                        li.textContent = `IP: ${ipObj.ForeignAddress}   ---   Protocol: ${ipObj.Protocol}`;
+                        li.textContent = `IP: ${ipObj.ForeignAddress}   ---   Protocol: ${ipObj.Protocol} - Application: ${ipObj.ApplicationName}`;
                         ipListContainer.appendChild(li);
                     }
                 });
@@ -180,7 +180,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 firewallIpList.forEach(ipObj => {
                     if (ipObj && ipObj.ForeignAddress && ipObj.State && ipObj.Protocol) {
                         const li = document.createElement('li');
-                        li.textContent = `IP: ${ipObj.ForeignAddress}   ---   Protocol: ${ipObj.Protocol}`;
+                        li.textContent = `IP: ${ipObj.ForeignAddress}   --- Protocol: ${ipObj.Protocol} - Application: ${ipObj.ApplicationName}`;
                         ipListContainer.appendChild(li);
                     }
                 });
