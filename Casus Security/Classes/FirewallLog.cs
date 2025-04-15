@@ -62,10 +62,11 @@ namespace Casus_Security.Classes
 						string localAddress = parts[4];
 						string foreignAddress = parts[5];
 						string state = parts[2];
+						string applicationname = parts[9];
 
-						if (IsValidIp(localAddress) && IsValidIp(foreignAddress))
+                        if (IsValidIp(localAddress) && IsValidIp(foreignAddress))
 						{
-							IP ip = new IP(protocol, localAddress, foreignAddress, state);
+							IP ip = new IP(protocol, localAddress, foreignAddress, state, applicationname);
 							ipList.Add(ip);
 						}
 					}

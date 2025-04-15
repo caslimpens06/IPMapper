@@ -24,7 +24,7 @@ class Program
 		if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) 
 		{
 			Console.WriteLine("Running in Linux... \n");
-
+			
 			Cleanup();
 
 			AuthLogReader.ReadAuthLog();

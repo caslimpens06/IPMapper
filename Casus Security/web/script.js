@@ -62,6 +62,72 @@ document.addEventListener("DOMContentLoaded", function () {
         return map;
     }
 
+    function toggleModal() {
+        const modal = document.getElementById("myModal");
+        modal.style.display = modal.style.display === "block" ? "none" : "block";
+    }
+
+    function updateModalContent(ipObj, knownApp) {
+
+        const modal = document.getElementById("myModal");
+
+        if (knownApp) {
+            const modalContent = document.getElementById("modalContent");
+            modalContent.innerHTML = `
+            <img class="modal-img" src="known_applications/images/${knownApp.Path}">
+            <span class="close">&times;</span>
+            ${knownApp ? `<h1><strong>${knownApp.Name} </strong></h1>` : ''}
+            <h2><strong>Dit is een bekende applicatie</strong></h2>
+            <p><strong>IP-adres:</strong> ${ipObj.ForeignAddress}</p>
+            <p><strong>Protocol:</strong> ${ipObj.Protocol}</p>
+            <p><strong>Applicatie:</strong> ${ipObj.ApplicationName}</p>
+        `;
+        } else {
+            const modalContent = document.getElementById("modalContent");
+            modalContent.innerHTML = `
+            <h1><strong>Dit is een onbekende applicatie</strong></h1>
+            <span class="close">&times;</span>
+            <p><strong>IP-adres:</strong> ${ipObj.ForeignAddress}</p>
+            <p><strong>Protocol:</strong> ${ipObj.Protocol}</p>
+            <p><strong>Applicatie:</strong> ${ipObj.ApplicationName}</p>
+        `;
+        }
+
+
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close")[0];
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function () {
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function (event) {
+            if (event.target != modalContent) {
+                modal.style.display = "none";
+            }
+        }
+    }
+
+    // Check if the application is known
+    async function checkIfKnownApplication(ipObj) {
+        try {
+            const response = await fetch('known_applications/known_applications.json');
+            const knownApplications = await response.json();
+            if (Array.isArray(knownApplications)) {
+                return knownApplications.find(app => app.NameRaw === ipObj.ApplicationName) || null;
+            } else {
+                console.error('Expected an array for known applications but got:', knownApplications);
+                return null;
+            }
+        } catch (error) {
+            console.error('Error fetching known applications:', error);
+            return null;
+        }
+    }
+
+
     function updateNetstatMapMarkers() {
         fetch('iplist.json')
             .then(response => response.json())
@@ -80,9 +146,30 @@ document.addEventListener("DOMContentLoaded", function () {
                                     icon: isKnown ? greenDotIcon : yellowDotIcon
                                 }).addTo(netstatMap);
 
-                                marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol}`);
+                                // Check if the application is known
+                                checkIfKnownApplication(ipObj).then(knownApp => {
+                                    if (knownApp) {
+                                        marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol} - Application: ${ipObj.ApplicationName} - Name: ${knownApp.Name} - Path: ${knownApp.Path}`);
+                                    } else {
+                                        marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol} - Application: ${ipObj.ApplicationName}`);
+                                    }
+                                }).catch(error => {
+                                    console.error('Error checking known application:', error);
+                                    marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol} - Application: ${ipObj.ApplicationName}`);
+                                });
+
                                 marker.on('mouseover', () => marker.openPopup());
                                 marker.on('mouseout', () => marker.closePopup());
+                                marker.on('click', () => {
+                                    checkIfKnownApplication(ipObj).then(knownApp => {
+                                        updateModalContent(ipObj, knownApp);
+                                        toggleModal();
+                                    }).catch(error => {
+                                        console.error('Error checking known application:', error);
+                                        updateModalContent(ipObj, null);
+                                        toggleModal();
+                                    });
+                                });
 
                                 netstatMarkers.push(marker);
                                 currentNetstatIPs.add(ipObj.ForeignAddress);
@@ -125,7 +212,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                     icon: isKnown ? greenDotIcon : yellowDotIcon
                                 }).addTo(firewallMap);
 
-                                marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol}`);
+                                marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol} - Application: ${ipObj.ApplicationName}`);
                                 marker.on('mouseover', () => marker.openPopup());
                                 marker.on('mouseout', () => marker.closePopup());
 
@@ -161,7 +248,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 ipList.forEach(ipObj => {
                     if (ipObj && ipObj.ForeignAddress && ipObj.State && ipObj.Protocol) {
                         const li = document.createElement('li');
-                        li.textContent = `IP: ${ipObj.ForeignAddress}   ---   Protocol: ${ipObj.Protocol}`;
+                        li.textContent = `IP: ${ipObj.ForeignAddress}   ---   Protocol: ${ipObj.Protocol} - Application: ${ipObj.ApplicationName}`;
                         ipListContainer.appendChild(li);
                     }
                 });
@@ -180,7 +267,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 firewallIpList.forEach(ipObj => {
                     if (ipObj && ipObj.ForeignAddress && ipObj.State && ipObj.Protocol) {
                         const li = document.createElement('li');
-                        li.textContent = `IP: ${ipObj.ForeignAddress}   ---   Protocol: ${ipObj.Protocol}`;
+                        li.textContent = `IP: ${ipObj.ForeignAddress}   --- Protocol: ${ipObj.Protocol} - Application: ${ipObj.ApplicationName}`;
                         ipListContainer.appendChild(li);
                     }
                 });
