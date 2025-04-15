@@ -46,6 +46,14 @@ document.addEventListener("DOMContentLoaded", function () {
         popupAnchor: [0, -12]
     });
 
+    const redDotIcon = L.divIcon({
+        className: 'red-dot',
+        html: '<div class="marker-circle" style="background-color: red; width: 10px; height: 10px; border-radius: 50%;"></div>',
+        iconSize: [12, 12],
+        iconAnchor: [6, 6],
+        popupAnchor: [0, -12]
+    });
+
     function showSection(sectionToShow) {
         netstatMapSection.style.display = 'none';
         firewallMapSection.style.display = 'none';
@@ -141,9 +149,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     setTimeout(() => {
                         ipList.forEach(ipObj => {
                             if (ipObj.State === "ESTABLISHED" && ipObj.Latitude && ipObj.Longitude) {
-                                const isKnown = previousNetstatIPs.has(ipObj.ForeignAddress) || firstLoad;
+                                let icon;
+                                if (ipObj.IsMalicious) {
+                                    icon = redDotIcon;
+                                } else {
+                                    const isKnown = previousNetstatIPs.has(ipObj.ForeignAddress) || firstLoad;
+                                    icon = isKnown ? greenDotIcon : yellowDotIcon;
+                                }
                                 const marker = L.marker([ipObj.Latitude, ipObj.Longitude], {
-                                    icon: isKnown ? greenDotIcon : yellowDotIcon
+                                    icon: icon
                                 }).addTo(netstatMap);
 
                                 // Check if the application is known
@@ -207,9 +221,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     setTimeout(() => {
                         firewallIpList.forEach(ipObj => {
                             if (ipObj.State === "ALLOW" && ipObj.Latitude && ipObj.Longitude) {
-                                const isKnown = previousFirewallIPs.has(ipObj.ForeignAddress) || firstLoad;
+                                let icon;
+                                if (ipObj.IsMalicious) {
+                                    icon = redDotIcon;
+                                } else {
+                                    const isKnown = previousFirewallIPs.has(ipObj.ForeignAddress) || firstLoad;
+                                    icon = isKnown ? greenDotIcon : yellowDotIcon;
+                                }
                                 const marker = L.marker([ipObj.Latitude, ipObj.Longitude], {
-                                    icon: isKnown ? greenDotIcon : yellowDotIcon
+                                    icon: icon
                                 }).addTo(firewallMap);
 
                                 marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol} - Application: ${ipObj.ApplicationName}`);

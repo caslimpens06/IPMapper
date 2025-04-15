@@ -69,6 +69,7 @@ namespace Casus_Security.Classes
 							IP ip = new IP(protocol, localAddress, foreignAddress, state, applicationname);
 							ipList.Add(ip);
 						}
+
 					}
 					catch (Exception ex)
 					{
@@ -76,8 +77,30 @@ namespace Casus_Security.Classes
 				}
 			}
 
+			// We moeten hier nog random ips genereren.
+			Random random = new Random();
+
+			for (int i = 0; i < 10; i++)
+			{
+				// Generate a random IP address
+				string simulatedIP = $"{random.Next(1, 255)}.{random.Next(0, 255)}.{random.Next(0, 255)}.{random.Next(0, 255)}";
+
+				// Create a mock IP object with random data
+				IP ip = new IP("TCP", "192.168.0.1", simulatedIP, "ESTABLISHED", "ThisIsMalicious.exe")
+				{
+					DataSize = random.Next(1000, 100000), // Random data size
+					Latitude = random.NextDouble() * 180 - 90, // Random latitude between -90 and 90
+					Longitude = random.NextDouble() * 360 - 180, // Random longitude between -180 and 180
+					Location = "Simulated Location",
+					IsMalicious = true // Mark as malicious
+				};
+
+				// Add the simulated IP to the list
+				displayedIPList.Add(ip);
+			}
+
 			// Remove duplicates based on ForeignAddress
-			
+
 			HashSet<string> seenForeignAddresses = new HashSet<string>();
 			ipList.RemoveAll(ip => !seenForeignAddresses.Add(ip.ForeignAddress));
 			

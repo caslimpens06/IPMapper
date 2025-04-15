@@ -11,6 +11,9 @@
 		private string _location;
 		private string _applicationName;
 
+		public bool IsMalicious { get; set; }
+		public long DataSize { get; set; } // Property to store data size
+
 		public string Protocol
 		{
 			get { return _protocol; }

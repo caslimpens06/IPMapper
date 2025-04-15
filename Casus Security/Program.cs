@@ -13,11 +13,11 @@ class Program
 
 			FirewallLog.ReadLog();
 
-			//IPScanner.PopulateIPS();
+			IPScanner.PopulateIPS();
 
-			//WebServer.OpenLauncher();
-
-			//IPUpdaterWindows();
+			WebServer.OpenLauncher();
+			
+			IPUpdaterWindows();
 		}
 		
 
