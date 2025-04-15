@@ -21,7 +21,7 @@ namespace Casus_Security.Classes
 				ParseLoginAttempts(lines);
 
 				foreach (LoginAttempt loginattempt in loginAttempts)
-				{
+				{	
 					LoginAttempt login = GeoAPI.FetchLocationForLoginAttempt(loginattempt);
 					populatedAttempts.Add(login);
 					Console.WriteLine($"Added {login.ToString()}");
@@ -47,7 +47,7 @@ namespace Casus_Security.Classes
 			foreach (Match match in matches)
 			{
 				string timestamp = match.Groups["Timestamp"].Value;
-				DateTime parsedTimestamp = DateTime.ParseExact(timestamp, "yyyy-MM-ddTHH:mm:ss.ffffff+00:00", null);
+				DateTime parsedTimestamp = DateTime.ParseExact(timestamp, "yyyy-MM-ddTHH:mm:ss.ffffffK", null);
 				string formattedTimestamp = parsedTimestamp.ToString("dd-MM-yyyy HH:mm:ss");
 
 				string username = match.Groups["Username"].Value;

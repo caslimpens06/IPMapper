@@ -13,15 +13,15 @@ class Program
 
 			FirewallLog.ReadLog();
 
-			IPScanner.PopulateIPS();
+			//IPScanner.PopulateIPS();
 
-			WebServer.OpenLauncher();
+			//WebServer.OpenLauncher();
 
-			IPUpdaterWindows();
+			//IPUpdaterWindows();
 		}
 		
 
-		if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || true) 
+		if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) 
 		{
 			Console.WriteLine("Running in Linux... \n");
 

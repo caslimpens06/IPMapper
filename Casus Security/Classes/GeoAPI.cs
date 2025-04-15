@@ -3,7 +3,7 @@ using Casus_Security.Model;
 
 namespace Casus_Security.Classes
 {
-	class GeoAPI
+	public class GeoAPI
 	{
 		private static readonly HttpClient _HttpClient = new HttpClient();
 		private const string BaseUrl = "https://ipinfo.io/";
