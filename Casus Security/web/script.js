@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+﻿document.addEventListener("DOMContentLoaded", function () {
     const netstatMapSection = document.getElementById("netstatMapSection");
     const firewallMapSection = document.getElementById("firewallMapSection");
     const ipListSection = document.getElementById("ipListSection");
@@ -85,6 +85,27 @@ document.addEventListener("DOMContentLoaded", function () {
                                 marker.on('mouseout', () => marker.closePopup());
 
                                 netstatMarkers.push(marker);
+
+                                // Draw traffic lines from/to my location
+                                fetch("mylocation.json")
+                                    .then(res => res.json())
+                                    .then(myLoc => {
+                                        const isOutbound = ipObj.LocalAddress.includes(myLoc.ip); // check if our IP is the source
+
+                                        const line = L.polyline(
+                                            isOutbound
+                                                ? [[myLoc.lat, myLoc.lon], [ipObj.Latitude, ipObj.Longitude]] // outbound
+                                                : [[ipObj.Latitude, ipObj.Longitude], [myLoc.lat, myLoc.lon]], // inbound
+                                            {
+                                                color: isOutbound ? "red" : "blue",
+                                                weight: 2,
+                                                opacity: 0.6,
+                                                dashArray: "5, 5"
+                                            }
+                                        ).addTo(netstatMap);
+
+                                        netstatMarkers.push(line);
+                                    });
                                 currentNetstatIPs.add(ipObj.ForeignAddress);
                             }
                         });
@@ -190,6 +211,24 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 100); // 100ms delay before updating
     }
 
+    function addOwnLocationToMap() {
+        fetch('mylocation.json')
+            .then(res => res.json())
+            .then(data => {
+                const marker = L.marker([data.lat, data.lon], {
+                    icon: L.divIcon({
+                        className: 'cool-marker',
+                        html: '<div class="marker-circle"></div>',
+                        iconSize: [12, 12],
+                        iconAnchor: [6, 6],
+                        popupAnchor: [0, -12]
+                    })
+                }).addTo(netstatMap); // or `firewallMap` if you want both
+
+                marker.bindPopup("📍 You are here");
+            })
+            .catch(err => console.error("Failed to load own location:", err));
+    }
 
     // Handle button clicks
     netstatMapBtn.addEventListener("click", function () {
@@ -251,4 +290,6 @@ document.addEventListener("DOMContentLoaded", function () {
         updateNetstatMapMarkers();
         updateFirewallMapMarkers();
     }, 8000);
+
+    addOwnLocationToMap();
 });
