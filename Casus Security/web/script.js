@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             if (ipObj.State === "ESTABLISHED" && ipObj.Latitude && ipObj.Longitude) {
                                 const isKnown = previousNetstatIPs.has(ipObj.ForeignAddress) || firstLoad;
                                 const marker = L.marker([ipObj.Latitude, ipObj.Longitude], {
-                                    icon: isKnown ? greenDotIcon : yellowDotIcon
+                                    icon: ipObj.isKnown ? greenDotIcon : yellowDotIcon
                                 }).addTo(netstatMap);
 
                                 marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol}`);
@@ -122,7 +122,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             if (ipObj.State === "ALLOW" && ipObj.Latitude && ipObj.Longitude) {
                                 const isKnown = previousFirewallIPs.has(ipObj.ForeignAddress) || firstLoad;
                                 const marker = L.marker([ipObj.Latitude, ipObj.Longitude], {
-                                    icon: isKnown ? greenDotIcon : yellowDotIcon
+                                    icon: ipObj.isKnown ? greenDotIcon : yellowDotIcon
                                 }).addTo(firewallMap);
 
                                 marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol}`);
