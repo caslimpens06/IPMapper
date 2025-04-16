@@ -10,9 +10,12 @@
 		private double _longitude;
 		private string _location;
 		private string _applicationName;
+		private long _hitCount;
 
 		public bool IsMalicious { get; set; }
-		public long DataSize { get; set; } // Property to store data size
+		public long DataSize { get; set; }
+
+		public long HitCount { get; set; }
 
 		public string Protocol
 		{
@@ -69,6 +72,14 @@
 			_state = state;
             _applicationName = applicationname;
         }
+
+		public IP(string protocol, string localaddress, string foreignaddress, string state)
+		{
+			_protocol = protocol;
+			_localAddress = localaddress;
+			_foreignAddress = foreignaddress;
+			_state = state;
+		}
 
 		public IP(string foreignaddress) 
 		{

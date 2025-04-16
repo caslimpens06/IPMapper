@@ -7,8 +7,8 @@ namespace Casus_Security.Classes
 	public class FirewallLog
 	{
 		private const string LogFilePath = @"{0}\System32\LogFiles\Firewall\pfirewall.log";
-		
-		private static List<IP> ipList = new List<IP>();
+
+		private static Dictionary<string, IP> ipDictionary = new Dictionary<string, IP>();
 		private static List<IP> displayedIPList = new List<IP>();
 
 		public static void ReadLog()
@@ -28,12 +28,8 @@ namespace Casus_Security.Classes
 				{
 					string logContent = sr.ReadToEnd();
 					string[] logLines = logContent.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-
-					// Take the first 100 lines if there are that many.
-					var first100Lines = logLines.Take(100).ToArray();
-
-					ParseLogToJson(first100Lines);
-					SaveIpsToJson();
+					Console.WriteLine("\n-- Reading Firewall log... -- \n");
+					ParseLogToJson(logLines);
 				}
 			}
 
@@ -62,63 +58,96 @@ namespace Casus_Security.Classes
 						string localAddress = parts[4];
 						string foreignAddress = parts[5];
 						string state = parts[2];
-						string applicationname = parts[9];
 
-                        if (IsValidIp(localAddress) && IsValidIp(foreignAddress))
+						if (IsValidIp(foreignAddress))
 						{
-							IP ip = new IP(protocol, localAddress, foreignAddress, state, applicationname);
-							ipList.Add(ip);
+							if (ipDictionary.ContainsKey(foreignAddress))
+							{
+								ipDictionary[foreignAddress].HitCount++;
+							}
+							else
+							{
+								IP ip = new IP(protocol, localAddress, foreignAddress, state);
+								ip.HitCount = 1;
+								ipDictionary.Add(foreignAddress, ip);
+							}
 						}
 
 					}
 					catch (Exception ex)
 					{
+						Console.WriteLine($"Could not parse Firewall log: {ex}");
 					}
 				}
 			}
 
-			// We moeten hier nog random ips genereren.
-			Random random = new Random();
+			// Convert to list - get the top 50 highest hit count IP's
+			var nonGeolocated = ipDictionary.Values
+											 .OrderByDescending(ip => ip.HitCount)
+											 .Take(50)
+											 .ToList();
 
-			for (int i = 0; i < 10; i++)
-			{
-				// Generate a random IP address
-				string simulatedIP = $"{random.Next(1, 255)}.{random.Next(0, 255)}.{random.Next(0, 255)}.{random.Next(0, 255)}";
-
-				// Create a mock IP object with random data
-				IP ip = new IP("TCP", "192.168.0.1", simulatedIP, "ESTABLISHED", "ThisIsMalicious.exe")
-				{
-					DataSize = random.Next(1000, 100000), // Random data size
-					Latitude = random.NextDouble() * 180 - 90, // Random latitude between -90 and 90
-					Longitude = random.NextDouble() * 360 - 180, // Random longitude between -180 and 180
-					Location = "Simulated Location",
-					IsMalicious = true // Mark as malicious
-				};
-
-				// Add the simulated IP to the list
-				displayedIPList.Add(ip);
-			}
-
-			// Remove duplicates based on ForeignAddress
-
-			HashSet<string> seenForeignAddresses = new HashSet<string>();
-			ipList.RemoveAll(ip => !seenForeignAddresses.Add(ip.ForeignAddress));
-			
-
-			foreach (IP noLocIP in ipList)
+			foreach (IP noLocIP in nonGeolocated)
 			{
 				IP populatedIP = GeoAPI.FetchLocationForIP(noLocIP);
 				if (populatedIP != null)
 				{
 					displayedIPList.Add(populatedIP);
+					Console.WriteLine(populatedIP.ForeignAddress + " Hitcount: " + populatedIP.HitCount);
 				}
 			}
+
+			SaveIpsToJson();
 		}
+
 
 		private static bool IsValidIp(string address)
 		{
-			return IPAddress.TryParse(address, out _);
+			if (string.IsNullOrEmpty(address))
+			{
+				return false;
+			}
+
+			if (IPAddress.TryParse(address, out IPAddress ip))
+			{
+				if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+				{
+					byte[] ipBytes = ip.GetAddressBytes();
+
+					// Exclude invalid IPv4 addresses like 0.0.0.0 and 255.255.255.255
+					if (ipBytes[0] == 0 || ipBytes[0] == 255)
+					{
+						return false;
+					}
+
+					// Exclude multicast addresses (224.0.0.0 to 233.255.255.255)
+					if (ipBytes[0] >= 224 && ipBytes[0] <= 233)
+					{
+						return false;
+					}
+				}
+
+				if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
+				{
+					if (ip.ToString() == "::1")
+					{
+						return false;
+					}
+
+					if (ip.ToString().StartsWith("ff"))
+					{
+						return false;
+					}
+				}
+
+				// If it's not in any of the excluded ranges, it's valid
+				return true;
+			}
+
+			return false; // Not a valid IP
 		}
+
+
 
 		private static void SaveIpsToJson()
 		{

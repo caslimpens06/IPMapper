@@ -13,7 +13,6 @@ namespace Casus_Security.Classes
 			try
 			{
 				string url = $"{BaseUrl}{ip.ForeignAddress}/json";
-				Console.WriteLine($"Fetching location for IP: {ip.ForeignAddress}");
 
 				// Send HTTP GET request to the IPInfo API
 				HttpResponseMessage response = _HttpClient.GetAsync(url).GetAwaiter().GetResult();
@@ -39,23 +38,13 @@ namespace Casus_Security.Classes
 
 						ip.Latitude = latitude;
 						ip.Longitude = longitude;
-
+						Console.WriteLine($"Fetched location for IP: {ip.ForeignAddress}");
 						return ip;
 					}
-					else
-					{
-						Console.WriteLine($"Invalid location data for {ip.ForeignAddress}");
-					}
-				}
-				else
-				{
-					Console.WriteLine($"No location data available for {ip.ForeignAddress}");
+
 				}
 			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error while fetching data for {ip.ForeignAddress}: {ex.Message}");
-			}
+			catch (Exception) { }
 			
 			return null;
 		}
@@ -94,24 +83,16 @@ namespace Casus_Security.Classes
 
 						return loginattempt;
 					}
-					else
-					{
-						Console.WriteLine($"Invalid location data for {loginattempt.Ip.ForeignAddress}");
-					}
+
 				}
 				else
 				{
-					Console.WriteLine($"No location data available for {loginattempt.Ip.ForeignAddress}");
 					loginattempt.Ip.Longitude = 0;
 					loginattempt.Ip.Latitude = 0;
 					return loginattempt;
 				}
 			}
-			catch (Exception ex)
-			{
-				Console.WriteLine($"Error while fetching data for {loginattempt.Ip.ForeignAddress}: {ex.Message}");
-			}
-
+			catch (Exception) { }
 			return loginattempt;
 		}
 	}

@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+﻿document.addEventListener("DOMContentLoaded", function () {
     const netstatMapSection = document.getElementById("netstatMapSection");
     const firewallMapSection = document.getElementById("firewallMapSection");
     const ipListSection = document.getElementById("ipListSection");
@@ -23,6 +23,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let firstNetstatLoad = true;
     let firstFirewallLoad = true;
+
+    let animatedLines = {};
 
     function isSectionVisible(section) {
         return section.style.display !== 'none';
@@ -76,49 +78,47 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function updateModalContent(ipObj, knownApp) {
-
         const modal = document.getElementById("myModal");
+        const modalContent = document.getElementById("modalContent");
 
         if (knownApp) {
-            const modalContent = document.getElementById("modalContent");
             modalContent.innerHTML = `
-            <img class="modal-img" src="known_applications/images/${knownApp.Path}">
             <span class="close">&times;</span>
-            ${knownApp ? `<h1><strong>${knownApp.Name} </strong></h1>` : ''}
+            <h1><strong>${knownApp.Name}</strong></h1>
             <h2><strong>Dit is een bekende applicatie</strong></h2>
             <p><strong>IP-adres:</strong> ${ipObj.ForeignAddress}</p>
             <p><strong>Protocol:</strong> ${ipObj.Protocol}</p>
             <p><strong>Applicatie:</strong> ${ipObj.ApplicationName}</p>
         `;
-        } else {
-            const modalContent = document.getElementById("modalContent");
+        } else if (knownApp === null) {
             modalContent.innerHTML = `
-            <h1><strong>Dit is een onbekende applicatie</strong></h1>
             <span class="close">&times;</span>
+            <h1><strong></strong>Dit is een onbekende applicatie</h1>
             <p><strong>IP-adres:</strong> ${ipObj.ForeignAddress}</p>
             <p><strong>Protocol:</strong> ${ipObj.Protocol}</p>
-            <p><strong>Applicatie:</strong> ${ipObj.ApplicationName}</p>
+        `;
+        } else {
+            modalContent.innerHTML = `
+            <span class="close">&times;</span>
+            <h1><strong>Dit IP-adres komt uit de firewall</strong></h1>
+            <p><strong>IP-adres:</strong> ${ipObj.ForeignAddress}</p>
+            <p><strong>Protocol:</strong> ${ipObj.Protocol}</p>
+            <p><strong>Hits:</strong> ${ipObj.HitCount}</p>
         `;
         }
 
-
-        // Get the <span> element that closes the modal
         var span = document.getElementsByClassName("close")[0];
-
-        // When the user clicks on <span> (x), close the modal
         span.onclick = function () {
             modal.style.display = "none";
-        }
+        };
 
-        // When the user clicks anywhere outside of the modal, close it
         window.onclick = function (event) {
-            if (event.target != modalContent) {
+            if (event.target === modal) {
                 modal.style.display = "none";
             }
-        }
+        };
     }
 
-    // Check if the application is known
     async function checkIfKnownApplication(ipObj) {
         try {
             const response = await fetch('known_applications/known_applications.json');
@@ -146,13 +146,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     netstatMarkers.forEach(marker => netstatMap.removeLayer(marker));
                     netstatMarkers = [];
 
-                    setTimeout(() => {
+                    
                         ipList.forEach(ipObj => {
                             if (ipObj.State === "ESTABLISHED" && ipObj.Latitude && ipObj.Longitude) {
+                                const isNewYellow = !previousNetstatIPs.has(ipObj.ForeignAddress) && !ipObj.IsMalicious && !firstLoad;
                                 let icon;
                                 if (ipObj.IsMalicious) {
                                     icon = redDotIcon;
-                                } else {
+                                } else {  
                                     const isKnown = previousNetstatIPs.has(ipObj.ForeignAddress) || firstLoad;
                                     icon = isKnown ? greenDotIcon : yellowDotIcon;
                                 }
@@ -163,13 +164,13 @@ document.addEventListener("DOMContentLoaded", function () {
                                 // Check if the application is known
                                 checkIfKnownApplication(ipObj).then(knownApp => {
                                     if (knownApp) {
-                                        marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol} - Application: ${ipObj.ApplicationName} - Name: ${knownApp.Name} - Path: ${knownApp.Path}`);
-                                    } else {
                                         marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol} - Application: ${ipObj.ApplicationName}`);
+                                    } else {
+                                        marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol}`);
                                     }
                                 }).catch(error => {
                                     console.error('Error checking known application:', error);
-                                    marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol} - Application: ${ipObj.ApplicationName}`);
+                                    marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol}`);
                                 });
 
                                 marker.on('mouseover', () => marker.openPopup());
@@ -186,6 +187,23 @@ document.addEventListener("DOMContentLoaded", function () {
                                 });
 
                                 netstatMarkers.push(marker);
+                                if (isNewYellow) {
+                                    if (navigator.geolocation) {
+                                        navigator.geolocation.getCurrentPosition(function (position) {
+                                            const myLat = position.coords.latitude;
+                                            const myLon = position.coords.longitude;
+
+                                            const line = animateLine([myLat, myLon], [ipObj.Latitude, ipObj.Longitude], netstatMap);
+                                            animatedLines[ipObj.ForeignAddress] = line;
+                                        });
+                                    }
+                                } else {
+                                    if (animatedLines[ipObj.ForeignAddress]) {
+                                        netstatMap.removeLayer(animatedLines[ipObj.ForeignAddress]);
+                                        delete animatedLines[ipObj.ForeignAddress];
+                                    }
+                                }
+
                                 currentNetstatIPs.add(ipObj.ForeignAddress);
                             }
                         });
@@ -200,7 +218,13 @@ document.addEventListener("DOMContentLoaded", function () {
                         firstLoad = false; // After first load, new IPs will be tracked
                         updateNetstatIpList(ipList);
 
-                    }, 100);
+                        for (let ip in animatedLines) {
+                            if (previousNetstatIPs.has(ip)) {
+                                netstatMap.removeLayer(animatedLines[ip]);
+                                delete animatedLines[ip];
+                            }
+                        }
+
                 } else {
                     console.error('Expected an array for Netstat IP list but got:', ipList);
                 }
@@ -218,26 +242,51 @@ document.addEventListener("DOMContentLoaded", function () {
                     firewallMarkers.forEach(marker => firewallMap.removeLayer(marker));
                     firewallMarkers = [];
 
-                    setTimeout(() => {
+                    {
                         firewallIpList.forEach(ipObj => {
                             if (ipObj.State === "ALLOW" && ipObj.Latitude && ipObj.Longitude) {
                                 let icon;
-                                if (ipObj.IsMalicious) {
-                                    icon = redDotIcon;
-                                } else {
-                                    const isKnown = previousFirewallIPs.has(ipObj.ForeignAddress) || firstLoad;
-                                    icon = isKnown ? greenDotIcon : yellowDotIcon;
+                                let isNewYellow = false;
+
+                                // Check if this IP is new and should be yellow
+                                const isKnown = previousFirewallIPs.has(ipObj.ForeignAddress) || firstLoad;
+                                if (!isKnown && !ipObj.IsMalicious) {
+                                    icon = yellowDotIcon;
+                                    isNewYellow = true;  // Mark this as a new yellow point
                                 }
+                                else if (ipObj.IsMalicious) {
+                                    icon = redDotIcon;
+                                }
+                                else {
+                                    icon = isKnown ? greenDotIcon : redDotIcon;
+                                }
+
                                 const marker = L.marker([ipObj.Latitude, ipObj.Longitude], {
                                     icon: icon
                                 }).addTo(firewallMap);
 
-                                marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol} - Application: ${ipObj.ApplicationName}`);
+                                marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol}`);
                                 marker.on('mouseover', () => marker.openPopup());
                                 marker.on('mouseout', () => marker.closePopup());
+                                marker.on('click', () => {
+                                    updateModalContent(ipObj, false);
+                                    toggleModal();
+                                });
+
+
 
                                 firewallMarkers.push(marker);
                                 currentFirewallIPs.add(ipObj.ForeignAddress);
+
+                                if (isNewYellow && navigator.geolocation) {
+                                    navigator.geolocation.getCurrentPosition(function (position) {
+                                        const myLat = position.coords.latitude;
+                                        const myLon = position.coords.longitude;
+
+                                        const line = animateLine([myLat, myLon], [ipObj.Latitude, ipObj.Longitude], firewallMap);
+                                        animatedLines[ipObj.ForeignAddress] = line;
+                                    });
+                                }
                             }
                         });
 
@@ -251,13 +300,15 @@ document.addEventListener("DOMContentLoaded", function () {
                         firstLoad = false;
                         updateFirewallIpList(firewallIpList);
 
-                    }, 100);
+                    }
                 } else {
                     console.error('Expected an array for Firewall IP list but got:', firewallIpList);
                 }
             })
             .catch(error => console.error('Error fetching Firewall IP list:', error));
     }
+
+
 
     function updateNetstatIpList(ipList) {
         const ipListContainer = document.getElementById("ipList");
@@ -268,7 +319,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 ipList.forEach(ipObj => {
                     if (ipObj && ipObj.ForeignAddress && ipObj.State && ipObj.Protocol) {
                         const li = document.createElement('li');
-                        li.textContent = `IP: ${ipObj.ForeignAddress}   ---   Protocol: ${ipObj.Protocol} - Application: ${ipObj.ApplicationName}`;
+                        li.textContent = `IP: ${ipObj.ForeignAddress}   ---   Protocol: ${ipObj.Protocol} --- Application: ${ipObj.ApplicationName}`;
                         ipListContainer.appendChild(li);
                     }
                 });
@@ -280,14 +331,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function updateFirewallIpList(firewallIpList) {
         const ipListContainer = document.getElementById("ipListFirewall");
-        ipListContainer.innerHTML = ''; // Clear the list first
+        ipListContainer.innerHTML = '';
 
         setTimeout(() => {
             if (Array.isArray(firewallIpList)) {
                 firewallIpList.forEach(ipObj => {
                     if (ipObj && ipObj.ForeignAddress && ipObj.State && ipObj.Protocol) {
                         const li = document.createElement('li');
-                        li.textContent = `IP: ${ipObj.ForeignAddress}   --- Protocol: ${ipObj.Protocol} - Application: ${ipObj.ApplicationName}`;
+                        li.textContent = `IP: ${ipObj.ForeignAddress}   --- Protocol: ${ipObj.Protocol}  --- Hitcount: ${ipObj.HitCount}`;
                         ipListContainer.appendChild(li);
                     }
                 });
@@ -296,6 +347,96 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }, 100); // 100ms delay before updating
     }
+
+    function animateLine(start, end, map) {
+        setTimeout(2000);
+
+        const line = L.polyline([start], {
+            color: 'red',
+            weight: 3,
+            opacity: 0.5,
+            dashArray: '5, 10',
+        }).addTo(map);
+
+        const steps = 30;
+        let i = 1;
+
+        const latStep = (end[0] - start[0]) / steps;
+        const lngStep = (end[1] - start[1]) / steps;
+
+        const interval = setInterval(() => {
+            if (i > steps) {
+                clearInterval(interval);
+                return;
+            }
+
+            const lat = start[0] + latStep * i;
+            const lng = start[1] + lngStep * i;
+            line.setLatLngs([start, [lat, lng]]);
+
+            i++;
+        }, 40);
+
+        setTimeout(() => {
+            map.removeLayer(line);
+        }, 8000);
+
+        return line;
+    }
+
+
+    function addOwnLocationToMap() {
+        if (!navigator.geolocation) {
+            console.error("Geolocation wordt niet ondersteund door deze browser.");
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(function (position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+
+            const blueDotIcon = L.divIcon({
+                className: 'blue-dot',
+                html: '<div class="marker-circle" style="background-color: dodgerblue; width: 10px; height: 10px; border-radius: 50%;"></div>',
+                iconSize: [12, 12],
+                iconAnchor: [6, 6],
+                popupAnchor: [0, -12]
+            });
+
+            // Marker voor Netstat map
+            const netstatMarker = L.marker([lat, lon], {
+                icon: blueDotIcon
+            }).addTo(netstatMap);
+
+            netstatMarker.bindTooltip("📍 You are here", {
+                direction: "top",
+                offset: [0, -10],
+                opacity: 0.9
+            });
+
+            netstatMarker.on("mouseover", () => netstatMarker.openTooltip());
+            netstatMarker.on("mouseout", () => netstatMarker.closeTooltip());
+
+            // Marker voor Firewall map
+            const firewallMarker = L.marker([lat, lon], {
+                icon: blueDotIcon
+            }).addTo(firewallMap);
+
+            firewallMarker.bindTooltip("📍 You are here", {
+                direction: "top",
+                offset: [0, -10],
+                opacity: 0.9
+            });
+
+            firewallMarker.on("mouseover", () => firewallMarker.openTooltip());
+            firewallMarker.on("mouseout", () => firewallMarker.closeTooltip());
+
+        }, function (error) {
+            console.error("Geolocation error:", error);
+            alert("Locatie kon niet worden opgehaald. Mogelijk heb je toegang geweigerd.");
+        });
+    }
+
 
 
     // Handle button clicks
@@ -333,12 +474,13 @@ document.addEventListener("DOMContentLoaded", function () {
         hideFlyoutMenu();
     });
 
-    // Flyout menu functionality
     hamburger.addEventListener("click", function () {
-        flyoutMenu.classList.toggle("open");
+        const isOpen = flyoutMenu.classList.toggle("open");
         content.classList.toggle("open");
         hamburger.classList.toggle("open");
         hamburger.classList.toggle("closed");
+
+        toggleNavButtons(isOpen);
     });
 
     function hideFlyoutMenu() {
@@ -348,9 +490,17 @@ document.addEventListener("DOMContentLoaded", function () {
         hamburger.classList.add("closed");
     }
 
+    function toggleNavButtons(enable) {
+        const buttons = document.querySelectorAll(".nav-btn");
+        buttons.forEach(btn => {
+            btn.disabled = !enable;
+        });
+    }
+
     netstatMap = initializeMap('netstatmap');
     firewallMap = initializeMap('firewallmap');
 
+    setTimeout(2000);
     updateNetstatMapMarkers();
     updateFirewallMapMarkers();
 
@@ -358,4 +508,6 @@ document.addEventListener("DOMContentLoaded", function () {
         updateNetstatMapMarkers();
         updateFirewallMapMarkers();
     }, 8000);
+
+    addOwnLocationToMap();
 });

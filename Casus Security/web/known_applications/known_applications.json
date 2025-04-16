@@ -1,17 +1,398 @@
 [
-  {
-    "NameRaw": "[Spotify.exe]",
-    "Name": "Spotify",
-    "Path": "spotify_icon.png"
-  },
-  {
-    "NameRaw": "[Discord.exe]",
-    "Name": "Discord",
-    "Path": "discord_icon.png"
-  },
-  {
-    "NameRaw": "[chrome.exe]",
-    "Name": "Google Chrome",
-    "Path": "chrome_icon.png"
-  }
+    {
+        "NameRaw": "[chrome.exe]",
+        "Name": "Google Chrome"
+    },
+    {
+        "NameRaw": "[spotify.exe]",
+        "Name": "Spotify"
+    },
+    {
+        "NameRaw": "[firefox.exe]",
+        "Name": "Mozilla Firefox"
+    },
+    {
+        "NameRaw": "[msedge.exe]",
+        "Name": "Microsoft Edge"
+    },
+    {
+        "NameRaw": "[safari.exe]",
+        "Name": "Safari"
+    },
+    {
+        "NameRaw": "[opera.exe]",
+        "Name": "Opera"
+    },
+    {
+        "NameRaw": "[vivaldi.exe]",
+        "Name": "Vivaldi"
+    },
+    {
+        "NameRaw": "[brave.exe]",
+        "Name": "Brave"
+    },
+    {
+        "NameRaw": "[spotify.exe]",
+        "Name": "Spotify"
+    },
+    {
+        "NameRaw": "[itunes.exe]",
+        "Name": "iTunes"
+    },
+    {
+        "NameRaw": "[vlc.exe]",
+        "Name": "VLC Media Player"
+    },
+    {
+        "NameRaw": "[netflix.exe]",
+        "Name": "Netflix"
+    },
+    {
+        "NameRaw": "[discord.exe]",
+        "Name": "Discord"
+    },
+    {
+        "NameRaw": "[skype.exe]",
+        "Name": "Skype"
+    },
+    {
+        "NameRaw": "[teams.exe]",
+        "Name": "Microsoft Teams"
+    },
+    {
+        "NameRaw": "[zoom.exe]",
+        "Name": "Zoom"
+    },
+    {
+        "NameRaw": "[slack.exe]",
+        "Name": "Slack"
+    },
+    {
+        "NameRaw": "[telegram.exe]",
+        "Name": "Telegram"
+    },
+    {
+        "NameRaw": "[whatsapp.exe]",
+        "Name": "WhatsApp"
+    },
+    {
+        "NameRaw": "[messenger.exe]",
+        "Name": "Messenger"
+    },
+    {
+        "NameRaw": "[obs64.exe]",
+        "Name": "OBS Studio"
+    },
+    {
+        "NameRaw": "[audacity.exe]",
+        "Name": "Audacity"
+    },
+    {
+        "NameRaw": "[premiere.exe]",
+        "Name": "Adobe Premiere Pro"
+    },
+    {
+        "NameRaw": "[photoshop.exe]",
+        "Name": "Adobe Photoshop"
+    },
+    {
+        "NameRaw": "[lightroom.exe]",
+        "Name": "Adobe Lightroom"
+    },
+    {
+        "NameRaw": "[afterfx.exe]",
+        "Name": "Adobe After Effects"
+    },
+    {
+        "NameRaw": "[adobe.exe]",
+        "Name": "Adobe Acrobat"
+    },
+    {
+        "NameRaw": "[illustrator.exe]",
+        "Name": "Adobe Illustrator"
+    },
+    {
+        "NameRaw": "[word.exe]",
+        "Name": "Microsoft Word"
+    },
+    {
+        "NameRaw": "[excel.exe]",
+        "Name": "Microsoft Excel"
+    },
+    {
+        "NameRaw": "[powerpnt.exe]",
+        "Name": "Microsoft PowerPoint"
+    },
+    {
+        "NameRaw": "[onenote.exe]",
+        "Name": "Microsoft OneNote"
+    },
+    {
+        "NameRaw": "[outlook.exe]",
+        "Name": "Microsoft Outlook"
+    },
+    {
+        "NameRaw": "[onedrive.exe]",
+        "Name": "Microsoft OneDrive"
+    },
+    {
+        "NameRaw": "[notepad++.exe]",
+        "Name": "Notepad++"
+    },
+    {
+        "NameRaw": "[sublime_text.exe]",
+        "Name": "Sublime Text"
+    },
+    {
+        "NameRaw": "[code.exe]",
+        "Name": "Visual Studio Code"
+    },
+    {
+        "NameRaw": "[pycharm64.exe]",
+        "Name": "PyCharm"
+    },
+    {
+        "NameRaw": "[idea64.exe]",
+        "Name": "IntelliJ IDEA"
+    },
+    {
+        "NameRaw": "[webstorm64.exe]",
+        "Name": "WebStorm"
+    },
+    {
+        "NameRaw": "[clion64.exe]",
+        "Name": "CLion"
+    },
+    {
+        "NameRaw": "[datagrip64.exe]",
+        "Name": "DataGrip"
+    },
+    {
+        "NameRaw": "[androidstudio.exe]",
+        "Name": "Android Studio"
+    },
+    {
+        "NameRaw": "[eclipse.exe]",
+        "Name": "Eclipse"
+    },
+    {
+        "NameRaw": "[netbeans.exe]",
+        "Name": "NetBeans"
+    },
+    {
+        "NameRaw": "[xcode.exe]",
+        "Name": "Xcode"
+    },
+    {
+        "NameRaw": "[visualstudio.exe]",
+        "Name": "Visual Studio"
+    },
+    {
+        "NameRaw": "[steam.exe]",
+        "Name": "Steam"
+    },
+    {
+        "NameRaw": "[epicgameslauncher.exe]",
+        "Name": "Epic Games Launcher"
+    },
+    {
+        "NameRaw": "[battle.net.exe]",
+        "Name": "Battle.net"
+    },
+    {
+        "NameRaw": "[origin.exe]",
+        "Name": "Origin"
+    },
+    {
+        "NameRaw": "[riotclient.exe]",
+        "Name": "Riot Client"
+    },
+    {
+        "NameRaw": "[uplay.exe]",
+        "Name": "Ubisoft Connect"
+    },
+    {
+        "NameRaw": "[goggalaxy.exe]",
+        "Name": "GOG Galaxy"
+    },
+    {
+        "NameRaw": "[minecraftlauncher.exe]",
+        "Name": "Minecraft Launcher"
+    },
+    {
+        "NameRaw": "[robloxplayer.exe]",
+        "Name": "Roblox"
+    },
+    {
+        "NameRaw": "[fortnite.exe]",
+        "Name": "Fortnite"
+    },
+    {
+        "NameRaw": "[leagueclient.exe]",
+        "Name": "League of Legends"
+    },
+    {
+        "NameRaw": "[valorant.exe]",
+        "Name": "Valorant"
+    },
+    {
+        "NameRaw": "[cs2.exe]",
+        "Name": "Counter-Strike 2"
+    },
+    {
+        "NameRaw": "[dota2.exe]",
+        "Name": "Dota 2"
+    },
+    {
+        "NameRaw": "[apex.exe]",
+        "Name": "Apex Legends"
+    },
+    {
+        "NameRaw": "[pubg.exe]",
+        "Name": "PUBG"
+    },
+    {
+        "NameRaw": "[gta5.exe]",
+        "Name": "GTA V"
+    },
+    {
+        "NameRaw": "[eldenring.exe]",
+        "Name": "Elden Ring"
+    },
+    {
+        "NameRaw": "[hogwartslegacy.exe]",
+        "Name": "Hogwarts Legacy"
+    },
+    {
+        "NameRaw": "[spotifyinstaller.exe]",
+        "Name": "Spotify Installer"
+    },
+    {
+        "NameRaw": "[winrar.exe]",
+        "Name": "WinRAR"
+    },
+    {
+        "NameRaw": "[7zFM.exe]",
+        "Name": "7-Zip"
+    },
+    {
+        "NameRaw": "[ccleaner.exe]",
+        "Name": "CCleaner"
+    },
+    {
+        "NameRaw": "[malwarebytes.exe]",
+        "Name": "Malwarebytes"
+    },
+    {
+        "NameRaw": "[bitwarden.exe]",
+        "Name": "Bitwarden"
+    },
+    {
+        "NameRaw": "[lastpass.exe]",
+        "Name": "LastPass"
+    },
+    {
+        "NameRaw": "[nordvpn.exe]",
+        "Name": "NordVPN"
+    },
+    {
+        "NameRaw": "[expressvpn.exe]",
+        "Name": "ExpressVPN"
+    },
+    {
+        "NameRaw": "[protonvpn.exe]",
+        "Name": "ProtonVPN"
+    },
+    {
+        "NameRaw": "[dropbox.exe]",
+        "Name": "Dropbox"
+    },
+    {
+        "NameRaw": "[box.exe]",
+        "Name": "Box"
+    },
+    {
+        "NameRaw": "[mega.exe]",
+        "Name": "MEGA"
+    },
+    {
+        "NameRaw": "[rescuetime.exe]",
+        "Name": "RescueTime"
+    },
+    {
+        "NameRaw": "[f.lux.exe]",
+        "Name": "f.lux"
+    },
+    {
+        "NameRaw": "[rainmeter.exe]",
+        "Name": "Rainmeter"
+    },
+    {
+        "NameRaw": "[rivatuner.exe]",
+        "Name": "RivaTuner"
+    },
+    {
+        "NameRaw": "[msiafterburner.exe]",
+        "Name": "MSI Afterburner"
+    },
+    {
+        "NameRaw": "[gpu-z.exe]",
+        "Name": "GPU-Z"
+    },
+    {
+        "NameRaw": "[cpu-z.exe]",
+        "Name": "CPU-Z"
+    },
+    {
+        "NameRaw": "[hwmonitor.exe]",
+        "Name": "HWMonitor"
+    },
+    {
+        "NameRaw": "[speccy.exe]",
+        "Name": "Speccy"
+    },
+    {
+        "NameRaw": "[revo.exe]",
+        "Name": "Revo Uninstaller"
+    },
+    {
+        "NameRaw": "[everything.exe]",
+        "Name": "Everything"
+    },
+    {
+        "NameRaw": "[calibre.exe]",
+        "Name": "Calibre"
+    },
+    {
+        "NameRaw": "[kindle.exe]",
+        "Name": "Kindle"
+    },
+    {
+        "NameRaw": "[kobo.exe]",
+        "Name": "Kobo"
+    },
+    {
+        "NameRaw": "[libreoffice.exe]",
+        "Name": "LibreOffice"
+    },
+    {
+        "NameRaw": "[openoffice.exe]",
+        "Name": "OpenOffice"
+    },
+    {
+        "NameRaw": "[foxit.exe]",
+        "Name": "Foxit PDF Reader"
+    },
+    {
+        "NameRaw": "[blender.exe]",
+        "Name": "Blender"
+    },
+    {
+        "NameRaw": "[unity.exe]",
+        "Name": "Unity"
+    },
+    {
+        "NameRaw": "[unrealengine.exe]",
+        "Name": "Unreal Engine"
+    }
 ]

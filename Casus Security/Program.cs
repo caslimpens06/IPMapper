@@ -65,6 +65,7 @@ class Program
 		{
 			System.Threading.Thread.Sleep(8000);
 			IPScanner.PopulateIPS(); // Keep updating the IP's from NetStat every 8 seconds
+			System.Threading.Thread.Sleep(8000);
 			FirewallLog.ReadLog(); // // Keep updating the IP's from the Firewall log file every 8 seconds
 		}
 	}
