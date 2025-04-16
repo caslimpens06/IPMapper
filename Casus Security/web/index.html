@@ -22,22 +22,44 @@
             <li><a href="#" id="firewallMapBtn">Firewall Map</a></li>
             <li><a href="#" id="ipListBtn">Netstat IP List</a></li>
             <li><a href="#" id="firewallIpListBtn">Firewall IP List</a></li>
+            <li><a href="#" id="whitelistBtn">Manage Whitelist</a></li>
         </ul>
     </nav>
 
-    <!-- The Modal -->
+    <!-- The Netstat Modal -->
     <div id="myModal" class="modal">
 
         <!-- Modal content -->
         <div id="modalContent" class="modal-content">
-            <img src="known_applications//images/chrome_icon.png" width="500" height="600">
+            <img src="" width="500" height="600">
             <span class="close">&times;</span>
             <p>Some text in the Modal..</p>
         </div>
     </div>
 
-    <div class="content">
+    <!-- The Firewall Modal -->
+    <div id="firewallModal" class="modal">
 
+        <!-- Modal content -->
+        <div id="firewallModalContent" class="modal-content">
+            <img src="" width="500" height="600">
+            <span id="closeFirewallModal">&times;</span>
+            <p>Some text in the Modal..</p>
+        </div>
+    </div>
+
+    <!-- The Whitelist Modal -->
+    <div id="whiteListModal" class="modal">
+
+        <!-- Modal content -->
+        <div id="whiteListModalContent" class="modal-content">
+            <img src="" width="500" height="600">
+            <span id="closeWhiteListModal">&times;</span>
+            <p>Some text in the Modal..</p>
+        </div>
+    </div>
+
+    <div class="content">
 
         <div id="netstatMapSection" class="section">
             <div id="netstatmap"></div>
@@ -55,6 +77,15 @@
         <div id="firewallIpListSection" class="section">
             <h2>Firewall IP List</h2>
             <ul id="ipListFirewall"></ul>
+        </div>
+
+        <div id="whiteListSection" class="section">
+            <div id="whiteListSectionInner">
+                <h2>Manage Whitelist</h2>
+                <ul id="myWhitelist"></ul>
+            </div>
+
+            <button type="button" id="AddItemToWhiteListBtn">Add new item to Whitelist</button>
         </div>
 
     </div>

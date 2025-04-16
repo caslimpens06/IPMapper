@@ -13,13 +13,12 @@ class Program
 
 			FirewallLog.ReadLog();
 
-			//IPScanner.PopulateIPS();
+			IPScanner.PopulateIPS();
 
-			//WebServer.OpenLauncher();
+			WebServer.OpenLauncher();
 
-			//IPUpdaterWindows();
+			IPUpdaterWindows();
 		}
-		
 
 		if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) 
 		{

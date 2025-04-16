@@ -80,7 +80,7 @@ namespace Casus_Security.Classes
 			
 			HashSet<string> seenForeignAddresses = new HashSet<string>();
 			ipList.RemoveAll(ip => !seenForeignAddresses.Add(ip.ForeignAddress));
-			
+
 
 			foreach (IP noLocIP in ipList)
 			{

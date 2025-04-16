@@ -3,15 +3,27 @@ document.addEventListener("DOMContentLoaded", function () {
     const firewallMapSection = document.getElementById("firewallMapSection");
     const ipListSection = document.getElementById("ipListSection");
     const firewallIpListSection = document.getElementById("firewallIpListSection");
+    const whiteListSection = document.getElementById("whiteListSection");
 
     const netstatMapBtn = document.getElementById("netstatMapBtn");
     const firewallMapBtn = document.getElementById("firewallMapBtn");
     const ipListBtn = document.getElementById("ipListBtn");
     const firewallIpListBtn = document.getElementById("firewallIpListBtn");
+    const whiteListBtn = document.getElementById("whitelistBtn");
+    const AddItemToWhiteListBtn = document.getElementById("AddItemToWhiteListBtn");
 
     const hamburger = document.getElementById("hamburger");
     const flyoutMenu = document.getElementById("flyoutMenu");
     const content = document.querySelector(".content");
+
+    const modal = document.getElementById("myModal");
+    const modalContent = document.getElementById("modalContent");
+
+    const firewallModal = document.getElementById("firewallModal");
+    const firewallModalContent = document.getElementById("firewallModalContent");
+
+    const whiteListModal = document.getElementById("whiteListModal");
+    const whiteListModalContent = document.getElementById("whiteListModalContent");
 
     let netstatMap, firewallMap;
     let netstatMarkers = [];
@@ -51,6 +63,7 @@ document.addEventListener("DOMContentLoaded", function () {
         firewallMapSection.style.display = 'none';
         ipListSection.style.display = 'none';
         firewallIpListSection.style.display = 'none';
+        whiteListSection.style.display = 'none';
         sectionToShow.style.display = 'block';
     }
 
@@ -63,16 +76,40 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function toggleModal() {
+        console.log("Toggling modal...");
         const modal = document.getElementById("myModal");
-        modal.style.display = modal.style.display === "block" ? "none" : "block";
+        console.log("Current display style before toggle:", modal.style.display);
+
+        if (modal.style.display === "block") {
+            modal.style.display = "none";
+            console.log("Modal display set to none");
+        } else {
+            modal.style.display = "block"; // For some unknown reason, this doesn't work with the firewall map...
+            console.log("Modal display set to block");
+        }
+
+        console.log("Current display style after toggle:", modal.style.display);
+    }
+
+    function toggleFirewallModal() {
+        if (firewallModal.style.display === "block") {
+            firewallModal.style.display = "none";
+        } else {
+            firewallModal.style.display = "block";
+        }
+    }
+
+    function toggleWhiteListModal() {
+        if (whiteListModal.style.display === "block") {
+            whiteListModal.style.display = "none";
+        } else {
+            whiteListModal.style.display = "block";
+        }
     }
 
     function updateModalContent(ipObj, knownApp) {
 
-        const modal = document.getElementById("myModal");
-
         if (knownApp) {
-            const modalContent = document.getElementById("modalContent");
             modalContent.innerHTML = `
             <img class="modal-img" src="known_applications/images/${knownApp.Path}">
             <span class="close">&times;</span>
@@ -83,7 +120,6 @@ document.addEventListener("DOMContentLoaded", function () {
             <p><strong>Applicatie:</strong> ${ipObj.ApplicationName}</p>
         `;
         } else {
-            const modalContent = document.getElementById("modalContent");
             modalContent.innerHTML = `
             <h1><strong>Dit is een onbekende applicatie</strong></h1>
             <span class="close">&times;</span>
@@ -92,7 +128,6 @@ document.addEventListener("DOMContentLoaded", function () {
             <p><strong>Applicatie:</strong> ${ipObj.ApplicationName}</p>
         `;
         }
-
 
         // Get the <span> element that closes the modal
         var span = document.getElementsByClassName("close")[0];
@@ -110,10 +145,59 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    function updateFirewallModalContent(ipObj) {
+        firewallModalContent.innerHTML = `
+            <h1><strong>Firewall IP Details</strong></h1>
+            <span id="closeFirewallModal">&times;</span>
+            <p><strong>IP-adres:</strong> TEST ${ipObj.ForeignAddress}</p>
+            <p><strong>Protocol:</strong> ${ipObj.Protocol}</p>
+        `;
+
+        // Get the <span> element that closes the modal
+        var closeFirewallModal = document.getElementById("closeFirewallModal");
+
+        // When the user clicks on <span> (x), close the modal
+        closeFirewallModal.onclick = function () {
+            firewallModal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function (event) {
+            if (event.target != firewallModalContent) {
+                firewallModal.style.display = "none";
+            }
+        }
+    }
+
+    function updateWhiteListModalContent() {
+        whiteListModalContent.innerHTML = `
+            <h1><strong>Voeg een applicatie toe aan de whitelist</strong></h1>
+            <span id="closeWhiteListModal">&times;</span>
+            <p><strong>IP-adres:</strong> TEST</p>
+            <p><strong>Protocol:</strong> TEST</p>
+            <p><strong>Applicatie:</strong> TEST</p>
+            <p><strong>Path:</strong> TEST</p>
+            `;
+
+        // Get the <span> element that closes the modal
+        var span = document.getElementById("closeWhiteListModal");
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function () {
+            whiteListModal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function (event) {
+            if (event.target != whiteListModalContent) {
+                whiteListModal.style.display = "none";
+            }
+        }
+    }
+
     // Check if the application is known
     async function checkIfKnownApplication(ipObj) {
         try {
-            const response = await fetch('known_applications/known_applications.json');
+            const response = await fetch('known_applications/whitelist.json');
             const knownApplications = await response.json();
             if (Array.isArray(knownApplications)) {
                 return knownApplications.find(app => app.NameRaw === ipObj.ApplicationName) || null;
@@ -126,7 +210,6 @@ document.addEventListener("DOMContentLoaded", function () {
             return null;
         }
     }
-
 
     function updateNetstatMapMarkers() {
         fetch('iplist.json')
@@ -212,9 +295,13 @@ document.addEventListener("DOMContentLoaded", function () {
                                     icon: isKnown ? greenDotIcon : yellowDotIcon
                                 }).addTo(firewallMap);
 
-                                marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol} - Application: ${ipObj.ApplicationName}`);
+                                marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol}`);
                                 marker.on('mouseover', () => marker.openPopup());
                                 marker.on('mouseout', () => marker.closePopup());
+                                marker.on('click', () => {
+                                    updateFirewallModalContent(ipObj);
+                                    toggleFirewallModal();
+                                });
 
                                 firewallMarkers.push(marker);
                                 currentFirewallIPs.add(ipObj.ForeignAddress);
@@ -267,7 +354,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 firewallIpList.forEach(ipObj => {
                     if (ipObj && ipObj.ForeignAddress && ipObj.State && ipObj.Protocol) {
                         const li = document.createElement('li');
-                        li.textContent = `IP: ${ipObj.ForeignAddress}   --- Protocol: ${ipObj.Protocol} - Application: ${ipObj.ApplicationName}`;
+                        li.textContent = `IP: ${ipObj.ForeignAddress}   --- Protocol: ${ipObj.Protocol}`;
                         ipListContainer.appendChild(li);
                     }
                 });
@@ -277,6 +364,31 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 100); // 100ms delay before updating
     }
 
+    function updateWhiteList() {
+        const whiteListSection = document.getElementById("whiteListSectionInner");
+            whiteListSection.innerHTML = ''; // Clear the list first
+        setTimeout(() => {
+            fetch('known_applications/whitelist.json')
+                .then(response => response.json())
+                .then(whitelist => {
+                    if (Array.isArray(whitelist)) {
+                        whitelist.forEach(app => {
+                            if (app && app.Name && app.Path) {
+                                const li = document.createElement('li');
+                                li.innerHTML = `
+                                <img src="known_applications/images/${app.Path}" alt="${app.Name}" style="width: 20px; height: 20px; margin-right: 10px;">
+                                Name: ${app.Name}   --- Path: ${app.Path}
+                            `;
+                                whiteListSection.appendChild(li);
+                            }
+                        });
+                    } else {
+                        console.error('Expected an array for whitelist but got:', whitelist);
+                    }
+                })
+                .catch(error => console.error('Error fetching whitelist:', error));
+        }, 100); // 100ms delay before updating
+    }
 
     // Handle button clicks
     netstatMapBtn.addEventListener("click", function () {
@@ -311,6 +423,17 @@ document.addEventListener("DOMContentLoaded", function () {
     firewallIpListBtn.addEventListener("click", function () {
         showSection(firewallIpListSection);
         hideFlyoutMenu();
+    });
+
+    whiteListBtn.addEventListener("click", function () {
+        showSection(whiteListSection);
+        hideFlyoutMenu();
+        updateWhiteList();
+    });
+
+    AddItemToWhiteListBtn.addEventListener("click", function () {
+        toggleWhiteListModal();
+        updateWhiteListModalContent();
     });
 
     // Flyout menu functionality
