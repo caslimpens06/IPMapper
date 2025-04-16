@@ -16,6 +16,7 @@
     let netstatMap, firewallMap;
     let netstatMarkers = [];
     let firewallMarkers = [];
+    let blacklistedMarkers = [];
 
     let previousNetstatIPs = new Set();
     let previousFirewallIPs = new Set();
@@ -49,10 +50,10 @@
     });
 
     const redDotIcon = L.divIcon({
-        className: 'red-dot',
-        html: '<div class="marker-circle" style="background-color: red; width: 10px; height: 10px; border-radius: 50%;"></div>',
-        iconSize: [12, 12],
-        iconAnchor: [6, 6],
+        className: 'red-dot flashing',
+        html: `<div class="beam-flash"></div><div class="marker-core"></div>`,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10],
         popupAnchor: [0, -12]
     });
 
@@ -273,8 +274,6 @@
                                     toggleModal();
                                 });
 
-
-
                                 firewallMarkers.push(marker);
                                 currentFirewallIPs.add(ipObj.ForeignAddress);
 
@@ -306,6 +305,46 @@
                 }
             })
             .catch(error => console.error('Error fetching Firewall IP list:', error));
+    }
+
+    function renderBlacklistedIpList() {
+        fetch('ioc_blacklist/iocblacklist.json')
+            .then(response => response.json())
+            .then(blacklist => {
+                if (!Array.isArray(blacklist)) {
+                    console.error('Expected array from iocblacklist.json');
+                    return;
+                }
+
+                blacklist.forEach(ipObj => {
+                    if (ipObj.Latitude && ipObj.Longitude) {
+                        console.log("Adding blacklist marker for", ipObj.ForeignAddress);
+
+                        // Marker voor netstatMap
+                        const markerNetstat = L.marker([ipObj.Latitude, ipObj.Longitude], {
+                            icon: redDotIcon
+                        }).addTo(netstatMap);
+
+                        markerNetstat.bindPopup(`BLACKLISTED IP<br>IP: ${ipObj.ForeignAddress}`);
+                        markerNetstat.on('mouseover', () => markerNetstat.openPopup());
+                        markerNetstat.on('mouseout', () => markerNetstat.closePopup());
+
+                        // Marker voor firewallMap
+                        const markerFirewall = L.marker([ipObj.Latitude, ipObj.Longitude], {
+                            icon: redDotIcon
+                        }).addTo(firewallMap);
+
+                        markerFirewall.bindPopup(`BLACKLISTED IP<br>IP: ${ipObj.ForeignAddress}`);
+                        markerFirewall.on('mouseover', () => markerFirewall.openPopup());
+                        markerFirewall.on('mouseout', () => markerFirewall.closePopup());
+
+                        blacklistedMarkers.push(markerNetstat, markerFirewall);
+                    } else {
+                        console.warn("Blacklist IP missing location:", ipObj.ForeignAddress);
+                    }
+                });
+            })
+            .catch(error => console.error('Error loading iocblacklist.json:', error));
     }
 
 
@@ -499,6 +538,8 @@
 
     netstatMap = initializeMap('netstatmap');
     firewallMap = initializeMap('firewallmap');
+
+    renderBlacklistedIpList();
 
     setTimeout(2000);
     updateNetstatMapMarkers();

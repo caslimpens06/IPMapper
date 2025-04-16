@@ -17,6 +17,9 @@
     <None Update="web\index.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="web\ioc_blacklist\iocblacklist.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="web\iplist.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

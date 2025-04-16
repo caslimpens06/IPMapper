@@ -217,4 +217,44 @@ body {
         cursor: pointer;
     }
 
+.red-dot .beam-flash {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: rgba(255, 0, 0, 0.4);
+    border-radius: 50%;
+    animation: pulse 1.2s infinite;
+    transform: translate(-50%, -50%);
+    left: 50%;
+    top: 50%;
+}
+
+.red-dot .marker-core {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background-color: red;
+    border-radius: 50%;
+    box-shadow: 0 0 6px red;
+    transform: translate(-50%, -50%);
+    left: 50%;
+    top: 50%;
+}
+
+@keyframes pulse {
+    0% {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0.8;
+    }
+
+    50% {
+        transform: translate(-50%, -50%) scale(1.4);
+        opacity: 0.3;
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0.8;
+    }
+}
 

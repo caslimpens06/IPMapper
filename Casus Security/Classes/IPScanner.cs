@@ -127,7 +127,7 @@ namespace Casus_Security.Classes
 
 		public static void PopulateIPS()
 		{
-			Console.WriteLine("\n Getting Netstat data... \n");
+			Console.WriteLine("\nGetting Netstat data... \n");
 			ImportIpsFromNetstat();
 
 			foreach (IP ip in FromNetstat)

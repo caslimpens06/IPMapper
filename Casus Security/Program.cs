@@ -8,15 +8,26 @@ class Program
 		if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 		{
 			Console.WriteLine("Running in Windows... \n");
+			Console.WriteLine("Welkom bij IPMapper! \n");
+
+			Console.WriteLine(" ***   ****   *     *   ***   ****   ****   *****   ****  ");
+			Console.WriteLine("  *    *   *  **   **  *   *  *   *  *   *  *       *   * ");
+			Console.WriteLine("  *    ****   * * * *  *****  ****   ****   ****    ****  ");
+			Console.WriteLine("  *    *      *  *  *  *   *  *      *      *       *  *  ");
+			Console.WriteLine(" ***   *      *     *  *   *  *      *      *****   *   * \n");
+
+			Blacklister.BlacklistPrompt();
 
 			Cleanup();
+
+			Console.WriteLine("\nData verzamelen...");
 
 			FirewallLog.ReadLog();
 
 			IPScanner.PopulateIPS();
 
 			WebServer.OpenLauncher();
-			
+
 			IPUpdaterWindows();
 		}
 		

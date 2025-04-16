@@ -10,7 +10,7 @@
 		private double _longitude;
 		private string _location;
 		private string _applicationName;
-		private long _hitCount;
+		private bool _isMalicious;
 
 		public bool IsMalicious { get; set; }
 		public long DataSize { get; set; }
@@ -84,6 +84,12 @@
 		public IP(string foreignaddress) 
 		{
 			_foreignAddress = foreignaddress;
+		}
+
+		public IP(string foreignaddress, bool ismalicious)
+		{
+			_foreignAddress = foreignaddress;
+			_isMalicious = ismalicious;
 		}
 
 		public IP() { }
