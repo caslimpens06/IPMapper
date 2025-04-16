@@ -3,19 +3,22 @@
     const firewallMapSection = document.getElementById("firewallMapSection");
     const ipListSection = document.getElementById("ipListSection");
     const firewallIpListSection = document.getElementById("firewallIpListSection");
-
+    const sshMapSection = document.getElementById("sshMapSection");
+   
     const netstatMapBtn = document.getElementById("netstatMapBtn");
     const firewallMapBtn = document.getElementById("firewallMapBtn");
     const ipListBtn = document.getElementById("ipListBtn");
     const firewallIpListBtn = document.getElementById("firewallIpListBtn");
+    const sshMapBtn = document.getElementById("sshMapBtn");
 
     const hamburger = document.getElementById("hamburger");
     const flyoutMenu = document.getElementById("flyoutMenu");
     const content = document.querySelector(".content");
 
-    let netstatMap, firewallMap;
+    let netstatMap, firewallMap, sshMap
     let netstatMarkers = [];
     let firewallMarkers = [];
+    let sshmapMarkers = [];
     let blacklistedMarkers = [];
 
     let previousNetstatIPs = new Set();
@@ -26,10 +29,6 @@
     let firstFirewallLoad = true;
 
     let animatedLines = {};
-
-    function isSectionVisible(section) {
-        return section.style.display !== 'none';
-    }
 
     showSection(netstatMapSection);
 
@@ -62,6 +61,7 @@
         firewallMapSection.style.display = 'none';
         ipListSection.style.display = 'none';
         firewallIpListSection.style.display = 'none';
+        sshMapSection.style.display = 'none';
         sectionToShow.style.display = 'block';
     }
 
@@ -136,7 +136,6 @@
         }
     }
 
-
     function updateNetstatMapMarkers() {
         fetch('iplist.json')
             .then(response => response.json())
@@ -162,7 +161,6 @@
                                     icon: icon
                                 }).addTo(netstatMap);
 
-                                // Check if the application is known
                                 checkIfKnownApplication(ipObj).then(knownApp => {
                                     if (knownApp) {
                                         marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol} - Application: ${ipObj.ApplicationName}`);
@@ -209,14 +207,10 @@
                             }
                         });
 
-                        if (ipList.length === 0 && firstNetstatLoad && isSectionVisible(netstatMapSection)) {
-                            alert('No Netstat data was found.');
-                        }
-
                         firstNetstatLoad = false;
 
                         previousNetstatIPs = currentNetstatIPs;
-                        firstLoad = false; // After first load, new IPs will be tracked
+                        firstLoad = false;
                         updateNetstatIpList(ipList);
 
                         for (let ip in animatedLines) {
@@ -249,11 +243,10 @@
                                 let icon;
                                 let isNewYellow = false;
 
-                                // Check if this IP is new and should be yellow
                                 const isKnown = previousFirewallIPs.has(ipObj.ForeignAddress) || firstLoad;
                                 if (!isKnown && !ipObj.IsMalicious) {
                                     icon = yellowDotIcon;
-                                    isNewYellow = true;  // Mark this as a new yellow point
+                                    isNewYellow = true;
                                 }
                                 else if (ipObj.IsMalicious) {
                                     icon = redDotIcon;
@@ -320,7 +313,6 @@
                     if (ipObj.Latitude && ipObj.Longitude) {
                         console.log("Adding blacklist marker for", ipObj.ForeignAddress);
 
-                        // Marker voor netstatMap
                         const markerNetstat = L.marker([ipObj.Latitude, ipObj.Longitude], {
                             icon: redDotIcon
                         }).addTo(netstatMap);
@@ -329,7 +321,6 @@
                         markerNetstat.on('mouseover', () => markerNetstat.openPopup());
                         markerNetstat.on('mouseout', () => markerNetstat.closePopup());
 
-                        // Marker voor firewallMap
                         const markerFirewall = L.marker([ipObj.Latitude, ipObj.Longitude], {
                             icon: redDotIcon
                         }).addTo(firewallMap);
@@ -347,11 +338,72 @@
             .catch(error => console.error('Error loading iocblacklist.json:', error));
     }
 
+    function updateSSHMapMarkers() {
+        fetch('iplistlinuxauth.json')
+            .then(response => response.json())
+            .then(attempts => {
+                if (Array.isArray(attempts)) {
+                    let currentSSHIPs = new Set();
+
+                    sshmapMarkers.forEach(marker => sshMap.removeLayer(marker));
+                    sshmapMarkers = [];
+
+                    attempts.forEach(attempt => {
+                        const ipObj = attempt.Ip;
+                        if (ipObj && ipObj.Latitude && ipObj.Longitude && ipObj.ForeignAddress) {
+
+                            const marker = L.marker([ipObj.Latitude, ipObj.Longitude], {
+                                icon: greenDotIcon
+                            }).addTo(sshMap);
+
+                            marker.bindPopup(`
+                            <strong>IP:</strong> ${ipObj.ForeignAddress}<br>
+                            <strong>User:</strong> ${attempt.UserName}<br>
+                            <strong>Status:</strong> ${attempt.Status}<br>
+                            <strong>Time:</strong> ${attempt.Timestamp}
+                        `);
+
+                            marker.on('mouseover', () => marker.openPopup());
+                            marker.on('mouseout', () => marker.closePopup());
+
+                            sshmapMarkers.push(marker);
+
+                            if (isNewYellow) {
+                                if (navigator.geolocation) {
+                                    navigator.geolocation.getCurrentPosition(function (position) {
+                                        const myLat = position.coords.latitude;
+                                        const myLon = position.coords.longitude;
+
+                                        const line = animateLine(
+                                            [myLat, myLon],
+                                            [ipObj.Latitude, ipObj.Longitude],
+                                            sshMap
+                                        );
+                                        animatedLines[ipObj.ForeignAddress] = line;
+                                    });
+                                }
+                            } else if (animatedLines[ipObj.ForeignAddress]) {
+                                sshMap.removeLayer(animatedLines[ipObj.ForeignAddress]);
+                                delete animatedLines[ipObj.ForeignAddress];
+                            }
+
+                            currentSSHIPs.add(ipObj.ForeignAddress);
+                        }
+                    });
+
+                    previousNetstatIPs = currentSSHIPs;
+                    firstLoad = false;
+                } else {
+                    console.error('Expected array of LoginAttempt objects, got:', attempts);
+                }
+            })
+            .catch(error => console.error('Error fetching SSH login attempts:', error));
+    }
 
 
     function updateNetstatIpList(ipList) {
         const ipListContainer = document.getElementById("ipList");
-        ipListContainer.innerHTML = ''; // Clear the list first
+        ipListContainer.innerHTML = '';
 
         setTimeout(() => {
             if (Array.isArray(ipList)) {
@@ -470,6 +522,21 @@
             firewallMarker.on("mouseover", () => firewallMarker.openTooltip());
             firewallMarker.on("mouseout", () => firewallMarker.closeTooltip());
 
+
+            // Marker voor SSH map
+            const sshMarker = L.marker([lat, lon], {
+                icon: blueDotIcon
+            }).addTo(sshMap);
+
+            sshMarker.bindTooltip("📍 You are here", {
+                direction: "top",
+                offset: [0, -10],
+                opacity: 0.9
+            });
+
+            sshMarker.on("mouseover", () => sshMarker.openTooltip());
+            sshMarker.on("mouseout", () => sshMarker.closeTooltip());
+
         }, function (error) {
             console.error("Geolocation error:", error);
             alert("Locatie kon niet worden opgehaald. Mogelijk heb je toegang geweigerd.");
@@ -477,14 +544,13 @@
     }
 
 
-
-    // Handle button clicks
     netstatMapBtn.addEventListener("click", function () {
         showSection(netstatMapSection);
         hideFlyoutMenu();
 
         if (!netstatMap) {
             netstatMap = initializeMap('netstatmap');
+            addOwnLocationToMap();
             updateNetstatMapMarkers();
         } else {
             netstatMap.invalidateSize();
@@ -497,9 +563,30 @@
 
         if (!firewallMap) {
             firewallMap = initializeMap('firewallmap');
+            addOwnLocationToMap();
             updateFirewallMapMarkers();
         } else {
             firewallMap.invalidateSize();
+        }
+    });
+
+    sshMapBtn.addEventListener("click", function () {
+        showSection(sshMapSection);
+        hideFlyoutMenu();
+
+        const sshMapContainer = document.getElementById('sshmap');
+        if (!sshMapContainer) {
+            console.error("SSH Map container not found.");
+            return;
+        }
+
+        if (!sshMap) {
+            sshMap = initializeMap('sshmap');
+            addOwnLocationToMap(sshMap);
+            updateSSHMapMarkers();
+        } else {
+            sshMap.invalidateSize();
+            updateSSHMapMarkers();
         }
     });
 
@@ -537,17 +624,18 @@
     }
 
     netstatMap = initializeMap('netstatmap');
-    firewallMap = initializeMap('firewallmap');
 
     renderBlacklistedIpList();
 
     setTimeout(2000);
     updateNetstatMapMarkers();
     updateFirewallMapMarkers();
+    updateSSHMapMarkers();
 
     setInterval(() => {
         updateNetstatMapMarkers();
         updateFirewallMapMarkers();
+        updateSSHMapMarkers();
     }, 8000);
 
     addOwnLocationToMap();

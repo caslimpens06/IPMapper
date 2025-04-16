@@ -21,11 +21,13 @@ namespace Casus_Security.Classes
 				ParseLoginAttempts(lines);
 
 				foreach (LoginAttempt loginattempt in loginAttempts)
-				{	
-					LoginAttempt login = GeoAPI.FetchLocationForLoginAttempt(loginattempt);
-					populatedAttempts.Add(login);
-					Console.WriteLine($"Added {login.ToString()}");
-					
+				{
+					if (!populatedAttempts.Contains(loginattempt))
+					{
+						LoginAttempt login = GeoAPI.FetchLocationForLoginAttempt(loginattempt);
+						populatedAttempts.Add(login);
+						Console.WriteLine($"Added new object: {login.ToString()}");
+					}
 				}
 
 				SaveLoginAttemptsToJSON();
