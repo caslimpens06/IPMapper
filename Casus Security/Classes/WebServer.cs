@@ -27,63 +27,71 @@ public class WebServer
 		HttpListener listener = new HttpListener();
 		listener.Prefixes.Add("http://localhost:5000/");
 		listener.Start();
-		Console.WriteLine("Server started on: http://localhost:5000 \n");
 
-		// Open the browser
-		Process.Start(new ProcessStartInfo
+		try
 		{
-			FileName = "http://localhost:5000",
-			UseShellExecute = true
-		});
-
-		_ = Task.Run(async () =>
-		{
-			while (true)
+			// Open the browser
+			Process.Start(new ProcessStartInfo
 			{
-				HttpListenerContext context = await listener.GetContextAsync();
-				HttpListenerRequest request = context.Request;
-				HttpListenerResponse response = context.Response;
+				FileName = "http://localhost:5000",
+				UseShellExecute = true
+			});
 
-				// Check for ping request
-				if (request.Url.AbsolutePath == "/ping")
+			_ = Task.Run(async () =>
+			{
+				while (true)
 				{
+					HttpListenerContext context = await listener.GetContextAsync();
+					HttpListenerRequest request = context.Request;
+					HttpListenerResponse response = context.Response;
 
-					// Send a simple OK response to keep the connection alive
-					response.StatusCode = 200;
-					byte[] buffer = System.Text.Encoding.UTF8.GetBytes("OK");
-					response.ContentLength64 = buffer.Length;
-					response.OutputStream.Write(buffer, 0, buffer.Length);
+					// Check for ping request
+					if (request.Url.AbsolutePath == "/ping")
+					{
+
+						// Send a simple OK response to keep the connection alive
+						response.StatusCode = 200;
+						byte[] buffer = System.Text.Encoding.UTF8.GetBytes("OK");
+						response.ContentLength64 = buffer.Length;
+						response.OutputStream.Write(buffer, 0, buffer.Length);
+						response.OutputStream.Close();
+						continue;
+					}
+
+					string requestedFile = request.Url.AbsolutePath.TrimStart('/');
+					if (string.IsNullOrEmpty(requestedFile))
+						requestedFile = "index.html";
+
+					string filePath = Path.Combine(webFolderPath, requestedFile);
+
+					if (File.Exists(filePath))
+					{
+						string mimeType = GetMimeType(filePath);
+						byte[] buffer = File.ReadAllBytes(filePath);
+
+						response.ContentType = mimeType;
+						response.ContentLength64 = buffer.Length;
+						response.OutputStream.Write(buffer, 0, buffer.Length);
+
+						Console.WriteLine("Server started on: http://localhost:5000 \n");
+					}
+					else
+					{
+						// Return 404 if file not found
+						response.StatusCode = 404;
+						byte[] buffer = System.Text.Encoding.UTF8.GetBytes("<h1>404 - File Not Found</h1>");
+						response.ContentLength64 = buffer.Length;
+						response.OutputStream.Write(buffer, 0, buffer.Length);
+					}
+
 					response.OutputStream.Close();
-					continue;
 				}
-
-				string requestedFile = request.Url.AbsolutePath.TrimStart('/');
-				if (string.IsNullOrEmpty(requestedFile))
-					requestedFile = "index.html";
-
-				string filePath = Path.Combine(webFolderPath, requestedFile);
-
-				if (File.Exists(filePath))
-				{
-					string mimeType = GetMimeType(filePath);
-					byte[] buffer = File.ReadAllBytes(filePath);
-
-					response.ContentType = mimeType;
-					response.ContentLength64 = buffer.Length;
-					response.OutputStream.Write(buffer, 0, buffer.Length);
-				}
-				else
-				{
-					// Return 404 if file not found
-					response.StatusCode = 404;
-					byte[] buffer = System.Text.Encoding.UTF8.GetBytes("<h1>404 - File Not Found</h1>");
-					response.ContentLength64 = buffer.Length;
-					response.OutputStream.Write(buffer, 0, buffer.Length);
-				}
-
-				response.OutputStream.Close();
-			}
-		});
+			});
+		}
+		catch (Exception ex) 
+		{
+			Console.WriteLine("Local server couldn't be started. Are you already running a process on http://localhost:5000 ?");
+		}
 	}
 
 	private static string GetMimeType(string filePath)

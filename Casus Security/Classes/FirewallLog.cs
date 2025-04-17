@@ -93,7 +93,6 @@ namespace Casus_Security.Classes
 				if (populatedIP != null)
 				{
 					displayedIPList.Add(populatedIP);
-					Console.WriteLine(populatedIP.ForeignAddress + " Hitcount: " + populatedIP.HitCount);
 				}
 			}
 
@@ -146,8 +145,6 @@ namespace Casus_Security.Classes
 
 			return false; // Not a valid IP
 		}
-
-
 
 		private static void SaveIpsToJson()
 		{

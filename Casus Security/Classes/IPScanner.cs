@@ -43,6 +43,7 @@ namespace Casus_Security.Classes
 
 		private static void ParseOutgoingIpsFromNetstatOutput(string netstatOutput)
 		{
+			// Regex to capture relevant data - written by CHATGPT
 			Regex regex = new Regex(@"(?<protocol>\S+)\s+(?<localAddress>\S+)\s+(?<foreignAddress>\S+)\s+(?<state>\S+)\s+(?<applicationName>\S+)");
 
 			string[] lines = netstatOutput.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
