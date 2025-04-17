@@ -21,14 +21,21 @@
     let sshmapMarkers = [];
     let blacklistedMarkers = [];
 
-    let previousNetstatIPs = new Set();
-    let previousFirewallIPs = new Set();
-    let firstLoad = true;
+    // Store known IPs in localStorage to persist across page refreshes
+    let knownNetstatIPs = new Set(JSON.parse(localStorage.getItem('knownNetstatIPs') || '[]'));
+    let knownFirewallIPs = new Set(JSON.parse(localStorage.getItem('knownFirewallIPs') || '[]'));
+    let knownSSHIPs = new Set(JSON.parse(localStorage.getItem('knownSSHIPs') || '[]'));
 
-    let firstNetstatLoad = true;
-    let firstFirewallLoad = true;
+    // Track currently active IP addresses for comparison
+    let currentNetstatIPs = new Set();
+    let currentFirewallIPs = new Set();
+    let currentSSHIPs = new Set();
 
+    // Track active animation lines to avoid duplicates
     let animatedLines = {};
+
+    // Track if this is first load after page refresh
+    let isInitialLoad = true;
 
     showSection(netstatMapSection);
 
@@ -50,11 +57,12 @@
 
     const redDotIcon = L.divIcon({
         className: 'red-dot flashing',
-        html: `<div class="beam-flash"></div><div class="marker-core"></div>`,
-        iconSize: [20, 20],
-        iconAnchor: [10, 10],
-        popupAnchor: [0, -12]
+        html: `<div class="marker-core"></div>`,
+        iconSize: [40, 40],
+        iconAnchor: [20, 20],
+        popupAnchor: [0, -15]
     });
+
 
     function showSection(sectionToShow) {
         netstatMapSection.style.display = 'none';
@@ -141,22 +149,26 @@
             .then(response => response.json())
             .then(ipList => {
                 if (Array.isArray(ipList)) {
-                    let currentNetstatIPs = new Set();
+                    currentNetstatIPs.clear();
 
                     netstatMarkers.forEach(marker => netstatMap.removeLayer(marker));
                     netstatMarkers = [];
 
-
                     ipList.forEach(ipObj => {
                         if (ipObj.State === "ESTABLISHED" && ipObj.Latitude && ipObj.Longitude) {
-                            const isNewYellow = !previousNetstatIPs.has(ipObj.ForeignAddress) && !ipObj.IsMalicious && !firstLoad;
+                            const ip = ipObj.ForeignAddress;
+
+                            currentNetstatIPs.add(ip);
+
+                            const isNew = !knownNetstatIPs.has(ip) && !isInitialLoad;
+
                             let icon;
                             if (ipObj.IsMalicious) {
                                 icon = redDotIcon;
                             } else {
-                                const isKnown = previousNetstatIPs.has(ipObj.ForeignAddress) || firstLoad;
-                                icon = isKnown ? greenDotIcon : yellowDotIcon;
+                                icon = isNew ? yellowDotIcon : greenDotIcon;
                             }
+
                             const marker = L.marker([ipObj.Latitude, ipObj.Longitude], {
                                 icon: icon
                             }).addTo(netstatMap);
@@ -186,39 +198,22 @@
                             });
 
                             netstatMarkers.push(marker);
-                            if (isNewYellow) {
-                                if (navigator.geolocation) {
-                                    navigator.geolocation.getCurrentPosition(function (position) {
-                                        const myLat = position.coords.latitude;
-                                        const myLon = position.coords.longitude;
 
-                                        const line = animateLine([myLat, myLon], [ipObj.Latitude, ipObj.Longitude], netstatMap);
-                                        animatedLines[ipObj.ForeignAddress] = line;
-                                    });
-                                }
-                            } else {
-                                if (animatedLines[ipObj.ForeignAddress]) {
-                                    netstatMap.removeLayer(animatedLines[ipObj.ForeignAddress]);
-                                    delete animatedLines[ipObj.ForeignAddress];
-                                }
+                            if (isNew && !animatedLines[ip]) {
+                                animateLineToIP(ip, [ipObj.Latitude, ipObj.Longitude], netstatMap);
                             }
-
-                            currentNetstatIPs.add(ipObj.ForeignAddress);
                         }
                     });
 
-                    firstNetstatLoad = false;
+                    currentNetstatIPs.forEach(ip => knownNetstatIPs.add(ip));
 
-                    previousNetstatIPs = currentNetstatIPs;
-                    firstLoad = false;
+                    isInitialLoad = false;
+
+                    localStorage.setItem('knownNetstatIPs', JSON.stringify([...knownNetstatIPs]));
+
                     updateNetstatIpList(ipList);
 
-                    for (let ip in animatedLines) {
-                        if (previousNetstatIPs.has(ip)) {
-                            netstatMap.removeLayer(animatedLines[ip]);
-                            delete animatedLines[ip];
-                        }
-                    }
+                    cleanupAnimations(currentNetstatIPs);
 
                 } else {
                     console.error('Expected an array for Netstat IP list but got:', ipList);
@@ -232,67 +227,55 @@
             .then(response => response.json())
             .then(firewallIpList => {
                 if (Array.isArray(firewallIpList)) {
-                    let currentFirewallIPs = new Set();
+                    currentFirewallIPs.clear();
 
                     firewallMarkers.forEach(marker => firewallMap.removeLayer(marker));
                     firewallMarkers = [];
 
-                    {
-                        firewallIpList.forEach(ipObj => {
-                            if (ipObj.State === "ALLOW" && ipObj.Latitude && ipObj.Longitude) {
-                                let icon;
-                                let isNewYellow = false;
+                    firewallIpList.forEach(ipObj => {
+                        if (ipObj.State === "ALLOW" && ipObj.Latitude && ipObj.Longitude) {
+                            const ip = ipObj.ForeignAddress;
 
-                                const isKnown = previousFirewallIPs.has(ipObj.ForeignAddress) || firstLoad;
-                                if (!isKnown && !ipObj.IsMalicious) {
-                                    icon = yellowDotIcon;
-                                    isNewYellow = true;
-                                }
-                                else if (ipObj.IsMalicious) {
-                                    icon = redDotIcon;
-                                }
-                                else {
-                                    icon = isKnown ? greenDotIcon : redDotIcon;
-                                }
+                            currentFirewallIPs.add(ip);
 
-                                const marker = L.marker([ipObj.Latitude, ipObj.Longitude], {
-                                    icon: icon
-                                }).addTo(firewallMap);
+                            const isNew = !knownFirewallIPs.has(ip) && !isInitialLoad;
 
-                                marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol}`);
-                                marker.on('mouseover', () => marker.openPopup());
-                                marker.on('mouseout', () => marker.closePopup());
-                                marker.on('click', () => {
-                                    updateModalContent(ipObj, false);
-                                    toggleModal();
-                                });
-
-                                firewallMarkers.push(marker);
-                                currentFirewallIPs.add(ipObj.ForeignAddress);
-
-                                if (isNewYellow && navigator.geolocation) {
-                                    navigator.geolocation.getCurrentPosition(function (position) {
-                                        const myLat = position.coords.latitude;
-                                        const myLon = position.coords.longitude;
-
-                                        const line = animateLine([myLat, myLon], [ipObj.Latitude, ipObj.Longitude], firewallMap);
-                                        animatedLines[ipObj.ForeignAddress] = line;
-                                    });
-                                }
+                            let icon;
+                            if (ipObj.IsMalicious) {
+                                icon = redDotIcon;
+                            } else {
+                                icon = isNew ? yellowDotIcon : greenDotIcon;
                             }
-                        });
 
-                        if (firewallIpList.length === 0 && firstFirewallLoad && isSectionVisible(firewallMapSection)) {
-                            alert('No Firewall data was found.');
+                            const marker = L.marker([ipObj.Latitude, ipObj.Longitude], {
+                                icon: icon
+                            }).addTo(firewallMap);
+
+                            marker.bindPopup(`IP: ${ipObj.ForeignAddress} - Protocol: ${ipObj.Protocol}`);
+
+                            marker.on('mouseover', () => marker.openPopup());
+                            marker.on('mouseout', () => marker.closePopup());
+                            marker.on('click', () => {
+                                updateModalContent(ipObj, false);
+                                toggleModal();
+                            });
+
+                            firewallMarkers.push(marker);
+
+                            if (isNew && !animatedLines[ip]) {
+                                animateLineToIP(ip, [ipObj.Latitude, ipObj.Longitude], firewallMap);
+                            }
                         }
+                    });
 
-                        firstFirewallLoad = false;
+                    currentFirewallIPs.forEach(ip => knownFirewallIPs.add(ip));
 
-                        previousFirewallIPs = currentFirewallIPs;
-                        firstLoad = false;
-                        updateFirewallIpList(firewallIpList);
+                    localStorage.setItem('knownFirewallIPs', JSON.stringify([...knownFirewallIPs]));
 
-                    }
+                    updateFirewallIpList(firewallIpList);
+
+                    cleanupAnimations(currentFirewallIPs);
+
                 } else {
                     console.error('Expected an array for Firewall IP list but got:', firewallIpList);
                 }
@@ -343,7 +326,7 @@
             .then(response => response.json())
             .then(attempts => {
                 if (Array.isArray(attempts)) {
-                    let currentSSHIPs = new Set();
+                    currentSSHIPs.clear();
 
                     sshmapMarkers.forEach(marker => sshMap.removeLayer(marker));
                     sshmapMarkers = [];
@@ -351,55 +334,50 @@
                     attempts.forEach(attempt => {
                         const ipObj = attempt.Ip;
                         if (ipObj && ipObj.Latitude && ipObj.Longitude && ipObj.ForeignAddress) {
+                            const ip = ipObj.ForeignAddress;
+
+                            currentSSHIPs.add(ip);
+
+                            const isNew = !knownSSHIPs.has(ip) && !isInitialLoad;
+
+                            let icon = attempt.Status === "Failed" ? redDotIcon : (isNew ? yellowDotIcon : greenDotIcon);
 
                             const marker = L.marker([ipObj.Latitude, ipObj.Longitude], {
-                                icon: greenDotIcon
+                                icon: icon
                             }).addTo(sshMap);
 
                             marker.bindPopup(`
-                            <strong>IP:</strong> ${ipObj.ForeignAddress}<br>
-                            <strong>User:</strong> ${attempt.UserName}<br>
-                            <strong>Status:</strong> ${attempt.Status}<br>
-                            <strong>Time:</strong> ${attempt.Timestamp}
-                        `);
+                                <strong>IP:</strong> ${ipObj.ForeignAddress}<br>
+                                <strong>User:</strong> ${attempt.UserName}<br>
+                                <strong>Status:</strong> ${attempt.Status}<br>
+                                <strong>Time:</strong> ${attempt.Timestamp}
+                            `);
 
                             marker.on('mouseover', () => marker.openPopup());
                             marker.on('mouseout', () => marker.closePopup());
 
                             sshmapMarkers.push(marker);
 
-                            if (isNewYellow) {
-                                if (navigator.geolocation) {
-                                    navigator.geolocation.getCurrentPosition(function (position) {
-                                        const myLat = position.coords.latitude;
-                                        const myLon = position.coords.longitude;
-
-                                        const line = animateLine(
-                                            [myLat, myLon],
-                                            [ipObj.Latitude, ipObj.Longitude],
-                                            sshMap
-                                        );
-                                        animatedLines[ipObj.ForeignAddress] = line;
-                                    });
-                                }
-                            } else if (animatedLines[ipObj.ForeignAddress]) {
-                                sshMap.removeLayer(animatedLines[ipObj.ForeignAddress]);
-                                delete animatedLines[ipObj.ForeignAddress];
+                            if (isNew && !animatedLines[ip]) {
+                                animateLineToIP(ip, [ipObj.Latitude, ipObj.Longitude], sshMap);
                             }
-
-                            currentSSHIPs.add(ipObj.ForeignAddress);
                         }
                     });
 
-                    previousNetstatIPs = currentSSHIPs;
-                    firstLoad = false;
+                    // Update the known IPs set with all current IPs
+                    currentSSHIPs.forEach(ip => knownSSHIPs.add(ip));
+
+                    // Save to localStorage for persistence across page refreshes
+                    localStorage.setItem('knownSSHIPs', JSON.stringify([...knownSSHIPs]));
+
+                    cleanupAnimations(currentSSHIPs);
+
                 } else {
                     console.error('Expected array of LoginAttempt objects, got:', attempts);
                 }
             })
             .catch(error => console.error('Error fetching SSH login attempts:', error));
     }
-
 
     function updateNetstatIpList(ipList) {
         const ipListContainer = document.getElementById("ipList");
@@ -416,6 +394,11 @@
                         li.dataset.ip = ipObj.ForeignAddress;
                         li.dataset.protocol = ipObj.Protocol;
                         li.dataset.application = ipObj.ApplicationName || '';
+
+                        if (!knownNetstatIPs.has(ipObj.ForeignAddress) && !isInitialLoad) {
+                            li.classList.add('new-ip');
+                        }
+
                         ipListContainer.appendChild(li);
                     }
                 });
@@ -441,6 +424,11 @@
                         li.textContent = `IP: ${ipObj.ForeignAddress}   --- Protocol: ${ipObj.Protocol}  --- Hits: ${ipObj.HitCount}`;
                         li.dataset.ip = ipObj.ForeignAddress;
                         li.dataset.protocol = ipObj.Protocol;
+
+                        if (!knownFirewallIPs.has(ipObj.ForeignAddress) && !isInitialLoad) {
+                            li.classList.add('new-ip');
+                        }
+
                         ipListContainer.appendChild(li);
                     }
                 });
@@ -452,42 +440,77 @@
         }, 100); // 100ms delay before updating
     }
 
-    function animateLine(start, end, map) {
-        setTimeout(2000);
+    function animateLineToIP(ipAddress, destination, map) {
+        if (animatedLines[ipAddress]) {
+            return;
+        }
 
-        const line = L.polyline([start], {
-            color: 'red',
-            weight: 3,
-            opacity: 0.5,
-            dashArray: '5, 10',
-        }).addTo(map);
+        // Get the user's current position
+        navigator.geolocation.getCurrentPosition(function (position) {
+            const myLat = position.coords.latitude;
+            const myLon = position.coords.longitude;
+            const start = [myLat, myLon];
 
-        const steps = 30;
-        let i = 1;
+            const line = L.polyline([start], {
+                color: 'red',
+                weight: 3,
+                opacity: 0.5,
+                dashArray: '5, 10',
+            }).addTo(map);
 
-        const latStep = (end[0] - start[0]) / steps;
-        const lngStep = (end[1] - start[1]) / steps;
+            animatedLines[ipAddress] = {
+                line: line,
+                map: map,
+                timeout: null
+            };
 
-        const interval = setInterval(() => {
-            if (i > steps) {
-                clearInterval(interval);
-                return;
+            const steps = 30;
+            let i = 1;
+            const latStep = (destination[0] - start[0]) / steps;
+            const lngStep = (destination[1] - start[1]) / steps;
+
+            const interval = setInterval(() => {
+                if (i > steps) {
+                    clearInterval(interval);
+                    return;
+                }
+
+                const lat = start[0] + latStep * i;
+                const lng = start[1] + lngStep * i;
+                line.setLatLngs([start, [lat, lng]]);
+
+                i++;
+            }, 40);
+
+            const timeout = setTimeout(() => {
+                if (animatedLines[ipAddress]) {
+                    map.removeLayer(line);
+                    delete animatedLines[ipAddress];
+                }
+            }, 8000);
+
+            if (animatedLines[ipAddress]) {
+                animatedLines[ipAddress].timeout = timeout;
             }
-
-            const lat = start[0] + latStep * i;
-            const lng = start[1] + lngStep * i;
-            line.setLatLngs([start, [lat, lng]]);
-
-            i++;
-        }, 40);
-
-        setTimeout(() => {
-            map.removeLayer(line);
-        }, 8000);
-
-        return line;
+        }, function (error) {
+            console.error("Geolocation error:", error);
+        });
     }
 
+    function cleanupAnimations(currentIPs) {
+        // Clean up animations for IPs that are no longer present
+        for (let ip in animatedLines) {
+            if (!currentIPs.has(ip)) {
+                if (animatedLines[ip].line) {
+                    animatedLines[ip].map.removeLayer(animatedLines[ip].line);
+                }
+                if (animatedLines[ip].timeout) {
+                    clearTimeout(animatedLines[ip].timeout);
+                }
+                delete animatedLines[ip];
+            }
+        }
+    }
 
     function addOwnLocationToMap() {
         if (!navigator.geolocation) {
@@ -634,6 +657,7 @@
             btn.disabled = !enable;
         });
     }
+
     function addFilterFunctionality() {
         const ipListSection = document.getElementById("ipListSection");
         const netstatFilterContainer = document.createElement("div");
@@ -700,6 +724,26 @@
         });
     }
 
+    function applyNetstatFilters() {
+        const protocolFilter = document.getElementById("netstatProtocolFilter").value;
+        const ipFilter = document.getElementById("netstatIpFilter").value.toLowerCase();
+        const appFilter = document.getElementById("netstatAppFilter").value.toLowerCase();
+
+        const items = document.querySelectorAll("#ipList li");
+
+        items.forEach(item => {
+            const matchesProtocol = protocolFilter === "all" || item.dataset.protocol === protocolFilter;
+            const matchesIp = !ipFilter || item.dataset.ip.toLowerCase().includes(ipFilter);
+            const matchesApp = !appFilter || (item.dataset.application && item.dataset.application.toLowerCase().includes(appFilter));
+
+            if (matchesProtocol && matchesIp && matchesApp) {
+                item.style.display = "";
+            } else {
+                item.style.display = "none";
+            }
+        });
+    }
+
     function applyFirewallFilters() {
         const protocolFilter = document.getElementById("firewallProtocolFilter").value;
         const ipFilter = document.getElementById("firewallIpFilter").value.toLowerCase();
@@ -731,13 +775,37 @@
         applyFirewallFilters();
     }
 
+    window.addEventListener('storage', function (e) {
+        if (e.key === 'knownNetstatIPs') {
+            knownNetstatIPs = new Set(JSON.parse(e.newValue || '[]'));
+        } else if (e.key === 'knownFirewallIPs') {
+            knownFirewallIPs = new Set(JSON.parse(e.newValue || '[]'));
+        } else if (e.key === 'knownSSHIPs') {
+            knownSSHIPs = new Set(JSON.parse(e.newValue || '[]'));
+        }
+    });
+
     netstatMap = initializeMap('netstatmap');
+    firewallMap = initializeMap('firewallmap');
+    sshMap = initializeMap('sshmap');
+
+    const style = document.createElement('style');
+    style.textContent = `
+        .new-ip {
+            background-color: #ffff99;
+            animation: fadeBg 8s forwards;
+        }
+        @keyframes fadeBg {
+            from { background-color: #ffff99; }
+            to { background-color: transparent; }
+        }
+    `;
+    document.head.appendChild(style);
 
     renderBlacklistedIpList();
-
     addFilterFunctionality();
+    addOwnLocationToMap();
 
-    setTimeout(2000);
     updateNetstatMapMarkers();
     updateFirewallMapMarkers();
     updateSSHMapMarkers();
@@ -747,6 +815,4 @@
         updateFirewallMapMarkers();
         updateSSHMapMarkers();
     }, 8000);
-
-    addOwnLocationToMap();
 });

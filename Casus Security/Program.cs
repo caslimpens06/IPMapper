@@ -4,7 +4,7 @@ class Program
 {
 	static void Main(string[] args)
 	{
-	
+		
 		if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
 		{
 			Console.WriteLine("Running in Windows... \n");
@@ -15,6 +15,10 @@ class Program
 			Console.WriteLine("  *    ****   * * * *  *****  ****   ****   ****    ****  ");
 			Console.WriteLine("  *    *      *  *  *  *   *  *      *      *       *  *  ");
 			Console.WriteLine(" ***   *      *     *  *   *  *      *      *****   *   * \n");
+
+			Console.WriteLine("LET OP! Deze applicatie gebruikt een gratis geolocation API voor het opvragen van IP-locaties. " +
+			"Wanneer er geen punten zichtbaar zijn op de kaart en/of in de lijst, probeer het opnieuw met een VPN verbinding." +
+			" Deze API heeft een gratis limiet. \n");
 
 			Blacklister.BlacklistPrompt();
 
